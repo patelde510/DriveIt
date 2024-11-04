@@ -2,7 +2,7 @@
 let express = require("express");
 let app = express();
 let port = 8080;
-let hostname = "localhost";
+let hostname = '0.0.0.0'; // for local testing change this to localhost
 
 app.get("/", (req, res) => {
     res.send('Hello World!');
