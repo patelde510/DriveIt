@@ -1,0 +1,88 @@
+/* Basic styling for layout */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    color: #333;
+    background-color: #f4f4f9;
+}
+
+header, footer {
+    background-color: #0d6efd;
+    color: #fff;
+    text-align: center;
+    padding: 1.5em 0;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 2em;
+}
+
+header p {
+    font-size: 1em;
+}
+
+/* Navigation Bar Styling */
+nav {
+    background-color: #0b5ed7;
+    display: flex;
+    justify-content: center;
+    padding: 0.8em 0;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+nav ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    gap: 2em;
+}
+
+nav ul li {
+    margin: 0;
+}
+
+nav ul li a {
+    color: #ffffff;
+    text-decoration: none;
+    font-weight: bold;
+    padding: 0.5em 1em;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+nav ul li a:hover {
+    background-color: #0a58ca;
+}
+
+.container {
+    width: 80%;
+    max-width: 1200px;
+    margin: 2em auto;
+    padding: 1.5em;
+    background-color: #fff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+h2 {
+    color: #0d6efd;
+    font-size: 1.8em;
+    border-bottom: 2px solid #0d6efd;
+    padding-bottom: 0.3em;
+    margin-bottom: 1em;
+}
+
+p {
+    font-size: 1em;
+    line-height: 1.6;
+    color: #555;
+}
+
+/* Footer Styling */
+footer p {
+    margin: 0;
+    font-size: 0.9em;
+}
