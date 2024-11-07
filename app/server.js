@@ -3,11 +3,12 @@
 let express = require("express");
 let app = express();
 let session = require('express-session');
-let port = 3000;
+let port = 8080;
 let hostname = "localhost";
 let pool = require('./db');
 let passport = require('./auth');
 
+app.use(express.static(__dirname));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -73,8 +74,8 @@ app.get("/profile", (req, res) => {
 
 
 app.get("/", (req, res) => {
-    res.send('Hello World!\n Testing for Autodeploy');
-  })
+    res.sendFile(__dirname + "/public/index.html");
+});
 
 app.listen(port, hostname, () => {
     console.log(`http://${hostname}:${port}`);
