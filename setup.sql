@@ -16,9 +16,9 @@ CREATE TABLE CUSTOMER (
     state VARCHAR(2),
     country VARCHAR(50),
     email VARCHAR(100),
-    favorites JSON
-    username VARCHAR(20);
-    password VARCHAR(100);
+    favorites JSON,
+    username VARCHAR(20),
+    password VARCHAR(100)
 );
 
 CREATE TABLE REVIEW (
@@ -109,3 +109,5 @@ FOREIGN KEY (reviewId) REFERENCES REVIEW(reviewId);
 ALTER TABLE SPECS
 ADD CONSTRAINT fk_specs_vehicle
 FOREIGN KEY (vin) REFERENCES VEHICLE(vin);
+
+\q
