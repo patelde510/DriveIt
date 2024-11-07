@@ -1,9 +1,8 @@
 {
     "scripts": {
         "start": "node app/server.js",
-        "setup": "fly postgres connect -a driveit-db < setup.sql",
         "start:local": "node app/server.js",
-        "setup:local": "psql -U postgres -d postgres -c 'create database driveit-db' -f setup.sql"
+        "setup:local": "psql -U postgres -d postgres -c 'create database driveit' -f setup.sql"
     },
     "dependencies": {
         "axios": "^1.1.3",

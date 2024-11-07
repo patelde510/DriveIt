@@ -1,7 +1,7 @@
 
 DROP DATABASE IF EXISTS driveit;
 CREATE DATABASE driveit;
-\c driveit;
+\c driveit
 
 
 -- Create the tables
