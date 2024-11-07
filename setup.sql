@@ -1,7 +1,7 @@
 
 DROP DATABASE IF EXISTS driveit;
 CREATE DATABASE driveit;
-\c driveit;
+\c driveit
 
 
 -- Create the tables
@@ -16,9 +16,9 @@ CREATE TABLE CUSTOMER (
     state VARCHAR(2),
     country VARCHAR(50),
     email VARCHAR(100),
-    favorites JSON
-    username VARCHAR(20);
-    password VARCHAR(100);
+    favorites JSON,
+    username VARCHAR(20),
+    password VARCHAR(100)
 );
 
 CREATE TABLE REVIEW (
@@ -58,7 +58,7 @@ CREATE TABLE SPECS (
 
 -- Populate the tables
 
-INSERT INTO VEHICLE (VIN, Make, Model, bodyType, driveTrain, Price, Mileage, Condition, yearOfManufacture, Status, reviewID)
+INSERT INTO VEHICLE (vin, make, model, bodyType, driveTrain, price, mileage, condition, yearOfManufacture, status, reviewId)
 VALUES 
 ('1HGCM82633A123456', 'Honda', 'Accord', 'Sedan', 'FWD', 22000, 15000, 'Used', 2021, 'Available', 1),
 ('3CZRE4H52BG706551', 'Honda', 'CR-V', 'SUV', 'AWD', 28000, 5000, 'Used', 2022, 'Pending', 2),
@@ -66,7 +66,7 @@ VALUES
 ('1N4AL3AP3JC123456', 'Nissan', 'Altima', 'Sedan', 'FWD', 18000, 20000, 'Used', 2020, 'Available', 4),
 ('5YJ3E1EA7JF123456', 'Tesla', 'Model 3', 'Sedan', 'RWD', 45000, 3000, 'New', 2023, 'Available', 5);
 
-INSERT INTO SPECS (specID, VIN, exteriorColor, interiorColor, engineType, numberOfSeats, Transmission, fuelType, otherUpgrades)
+INSERT INTO SPECS (specId, vin, exteriorColor, interiorColor, engineType, numberOfSeats, transmission, fuelType, otherUpgrades)
 VALUES
 (1, '1HGCM82633A123456', 'Silver', 'Black', 'Gas', 5, 'Automatic', 'Gasoline', JSON_ARRAY('Sunroof', 'Leather seats')),
 (2, '3CZRE4H52BG706551', 'Blue', 'Gray', 'Gas', 5, 'Automatic', 'Gasoline', JSON_ARRAY('Alloy wheels', 'Heated seats')),
@@ -74,7 +74,7 @@ VALUES
 (4, '1N4AL3AP3JC123456', 'White', 'Beige', 'Gas', 5, 'Manual', 'Gasoline', JSON_ARRAY('Navigation', 'Bluetooth')),
 (5, '5YJ3E1EA7JF123456', 'Black', 'White', 'Electric', 5, 'Automatic', 'Electricity', JSON_ARRAY('Autopilot', 'Premium audio'));
 
-INSERT INTO REVIEW (reviewID, custID, Make, Model, Rating, Comments)
+INSERT INTO REVIEW (reviewId, custId, make, model, rating, comments)
 VALUES
 (1, 101, 'Honda', 'Accord', 4, 'Very reliable and smooth ride.'),
 (2, 102, 'Honda', 'CR-V', 5, 'Perfect for family trips and great handling.'),
@@ -82,14 +82,13 @@ VALUES
 (4, 104, 'Nissan', 'Altima', 3, 'Affordable but lacks advanced features.'),
 (5, 105, 'Tesla', 'Model 3', 5, 'Amazing tech and very efficient on energy.');
 
-INSERT INTO CUSTOMER (custID, VIN, Name, SSN, Address, City, State, Country, Email, Favorites)
+INSERT INTO CUSTOMER (custId, vin, name, ssn, address, city, state, country, email, favorites, username, password)
 VALUES
-(101, '1HGCM82633A123456', 'Alice Smith', 123456789, '123 Elm St', 'Philadelphia', 'PA', 'USA', 'alice@example.com', JSON_ARRAY('1HGCM82633A123456', '5YJ3E1EA7JF123456')),
-(102, '3CZRE4H52BG706551', 'Bob Johnson', 987654321, '456 Oak St', 'New York', 'NY', 'USA', 'bob@example.com', JSON_ARRAY('3CZRE4H52BG706551', '1N4AL3AP3JC123456')),
-(103, '1FTFW1EF1BFA12345', 'Charlie Brown', 192837465, '789 Pine St', 'Los Angeles', 'CA', 'USA', 'charlie@example.com', JSON_ARRAY('1FTFW1EF1BFA12345', '1HGCM82633A123456')),
-(104, '1N4AL3AP3JC123456', 'Dana White', 564738291, '321 Maple St', 'Chicago', 'IL', 'USA', 'dana@example.com', JSON_ARRAY('1N4AL3AP3JC123456')),
-(105, '5YJ3E1EA7JF123456', 'Eva Green', 746291385, '654 Birch St', 'Houston', 'TX', 'USA', 'eva@example.com', JSON_ARRAY('5YJ3E1EA7JF123456', '3CZRE4H52BG706551'));
-
+(101, '1HGCM82633A123456', 'Alice Smith', 123456789, '123 Elm St', 'Philadelphia', 'PA', 'USA', 'alice@example.com', JSON_ARRAY('1HGCM82633A123456', '5YJ3E1EA7JF123456'), 'alice_smith', 'hashed_password_101'),
+(102, '3CZRE4H52BG706551', 'Bob Johnson', 987654321, '456 Oak St', 'New York', 'NY', 'USA', 'bob@example.com', JSON_ARRAY('3CZRE4H52BG706551', '1N4AL3AP3JC123456'), 'bob_johnson', 'hashed_password_102'),
+(103, '1FTFW1EF1BFA12345', 'Charlie Brown', 192837465, '789 Pine St', 'Los Angeles', 'CA', 'USA', 'charlie@example.com', JSON_ARRAY('1FTFW1EF1BFA12345', '1HGCM82633A123456'), 'charlie_brown', 'hashed_password_103'),
+(104, '1N4AL3AP3JC123456', 'Dana White', 564738291, '321 Maple St', 'Chicago', 'IL', 'USA', 'dana@example.com', JSON_ARRAY('1N4AL3AP3JC123456'), 'dana_white', 'hashed_password_104'),
+(105, '5YJ3E1EA7JF123456', 'Eva Green', 746291385, '654 Birch St', 'Houston', 'TX', 'USA', 'eva@example.com', JSON_ARRAY('5YJ3E1EA7JF123456', '3CZRE4H52BG706551'), 'eva_green', 'hashed_password_105');
 
 
 -- Add all foreign key references
@@ -109,3 +108,5 @@ FOREIGN KEY (reviewId) REFERENCES REVIEW(reviewId);
 ALTER TABLE SPECS
 ADD CONSTRAINT fk_specs_vehicle
 FOREIGN KEY (vin) REFERENCES VEHICLE(vin);
+
+\q
