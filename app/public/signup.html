@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signup</title>
+</head>
+<body>
+    <h2>Signup</h2>
+    <form id="signupForm">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required>
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required>
+        <button type="submit">Signup</button>
+    </form>
+    
+    <div id="message" style="display:none;">
+        <p id="signupSuccessMessage"></p>
+        <p id="countdown"></p>
+        <a id="loginLink" href="/login">Go to login</a>
+    </div>
+
+    <script>
+        document.getElementById("signupForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const username = document.getElementById("username").value;
+    const password = document.getElementById("password").value;
+
+    const response = await fetch("/signup", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username, password }),
+    });
+
+    const messageDiv = document.getElementById("message");
+    const countdownElement = document.getElementById("countdown");
+    
+    if (response.ok) {
+        // Hide the form and show the success message with countdown
+        document.getElementById("signupForm").style.display = "none";
+        messageDiv.style.display = "block";
+
+        let countdownTime = 5;
+        countdownElement.textContent = `Sign up successful, redirecting to login in ${countdownTime} seconds...`;
+
+        // Update the countdown every second
+        const countdownInterval = setInterval(() => {
+            countdownTime--;
+            countdownElement.textContent = `Sign up successful, redirecting to login in ${countdownTime} seconds...`;
+
+            if (countdownTime <= 0) {
+                clearInterval(countdownInterval);
+                window.location.href = "/login"; // Redirect after countdown finishes
+            }
+        }, 1000);
+    } else {
+        // Handle the error case by displaying the error message from the backend
+        const errorMessage = await response.text();
+        
+        // Show the error message in the message div
+        messageDiv.style.display = "block";
+        countdownElement.textContent = `Error: ${errorMessage}`;
+    }
+});
+    </script>
+</body>
+</html>

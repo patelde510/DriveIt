@@ -1,13 +1,13 @@
 
 DROP DATABASE IF EXISTS driveit;
 CREATE DATABASE driveit;
-\c driveit
+\c driveit;
 
 
 -- Create the tables
 
 CREATE TABLE CUSTOMER (
-    custId INT PRIMARY KEY,
+    custId SERIAL PRIMARY KEY,
     vin VARCHAR(17),
     name VARCHAR(50),
     ssn INT,
@@ -17,8 +17,8 @@ CREATE TABLE CUSTOMER (
     country VARCHAR(50),
     email VARCHAR(100),
     favorites JSON,
-    username VARCHAR(20),
-    password VARCHAR(100)
+    username VARCHAR(20) NOT NULL,
+    password VARCHAR(100) NOT NULL
 );
 
 CREATE TABLE REVIEW (
