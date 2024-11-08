@@ -1,12 +1,25 @@
-// server.js
-
 let express = require("express");
 let app = express();
+let hostname;
 let port = 8080;
-let hostname = '0.0.0.0';
+
+let { Pool } = require('pg');
+
+let databaseConfig;
+if (process.env.NODE_ENV == "production") {
+    hostname = "0.0.0.0";
+    databaseConfig = { connectionString: process.env.DATABASE_URL };
+} else {
+    hostname = "localhost";
+    databaseConfig = require('../env.json');
+}
+
 let { v4: uuidv4 } = require("uuid");
 let bcrypt = require("bcrypt");
-let pool = require('./db');
+let pool = new Pool(databaseConfig);
+pool.connect().then(() => {
+    console.log("Connected to database");
+})
 let cookieParser = require("cookie-parser");
 
 app.use(express.static(__dirname));
