@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logout</title>
+</head>
+<body>
+    <h2>Logout</h2>
+    <p id="message">Logging you out...</p>
+    <a href="/login">Login again</a>
+
+    <script>
+        // Send a request to the /logout endpoint to clear the session cookie
+        fetch("/logout", {
+            method: "GET",
+            credentials: "include" // Ensures cookies are sent with the request
+        })
+        .then(response => {
+            if (response.ok) {
+                document.getElementById("message").textContent = "You have been logged out.";
+            } else {
+                document.getElementById("message").textContent = "Error logging out. Please try again.";
+            }
+        })
+        .catch(error => {
+            console.error("Logout error:", error);
+            document.getElementById("message").textContent = "An error occurred during logout.";
+        });
+    </script>
+</body>
+</html>
