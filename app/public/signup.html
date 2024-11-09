@@ -4,68 +4,89 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Signup</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <h2>Signup</h2>
     <form id="signupForm">
-        <label for="username">Username:</label>
-        <input type="text" id="username" name="username" required>
-        <label for="password">Password:</label>
-        <input type="password" id="password" name="password" required>
-        <button type="submit">Signup</button>
+        <div class="container-signup">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" required>
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+            <label for="name">Full Name:</label>
+            <input type="text" id="name" name="name" required>
+            <label for="address">Address:</label>
+            <input type="text" id="address" name="address" required>
+            <label for="city">City:</label>
+            <input type="text" id="city" name="city" required>
+            <label for="state">State:</label>
+            <input type="text" id="state" name="state" required>
+            <label for="county">Country:</label>
+            <input type="text" id="country" name="country" required>
+            <label for="email">Email:</label>
+            <input type="text" id="email" name="email" required>
+
+            <button type="submit">Signup</button>
     </form>
-    
-    
-    <div id="message" style="display:none;">
-        <p id="signupSuccessMessage"></p>
+
+    <div id="message">
         <p id="countdown"></p>
         <a id="loginLink" href="/login">Go to login</a>
+    </div>
     </div>
 
     <script>
         document.getElementById("signupForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const username = document.getElementById("username").value;
-    const password = document.getElementById("password").value;
+            e.preventDefault();
+            const username = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+            const name = document.getElementById("name").value;
+            const address = document.getElementById("address").value;
+            const city = document.getElementById("city").value;
+            const state = document.getElementById("state").value;
+            const country = document.getElementById("country").value;
+            const email = document.getElementById("email").value;
 
-    const response = await fetch("/signup", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ username, password }),
-    });
+            const response = await fetch("/signup", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ username, password, name, address, city, state, country, email }),
+            });
 
-    const messageDiv = document.getElementById("message");
-    const countdownElement = document.getElementById("countdown");
-    
-    if (response.ok) {
-        // Hide the form and show the success message with countdown
-        document.getElementById("signupForm").style.display = "none";
-        messageDiv.style.display = "block";
+            const messageDiv = document.getElementById("message");
+            const countdownElement = document.getElementById("countdown");
 
-        let countdownTime = 5;
-        countdownElement.textContent = `Sign up successful, redirecting to login in ${countdownTime} seconds...`;
+            if (response.ok) {
+                // Hide the form and show the success message with countdown
+                document.getElementById("signupForm").style.display = "none";
+                messageDiv.style.display = "block";
 
-        // Update the countdown every second
-        const countdownInterval = setInterval(() => {
-            countdownTime--;
-            countdownElement.textContent = `Sign up successful, redirecting to login in ${countdownTime} seconds...`;
+                let countdownTime = 5;
+                countdownElement.textContent = `Sign up successful, redirecting to login in ${countdownTime} seconds...`;
 
-            if (countdownTime <= 0) {
-                clearInterval(countdownInterval);
-                window.location.href = "/login"; // Redirect after countdown finishes
+                // Update the countdown every second
+                const countdownInterval = setInterval(() => {
+                    countdownTime--;
+                    countdownElement.textContent = `Sign up successful, redirecting to login in ${countdownTime} seconds...`;
+
+                    if (countdownTime <= 0) {
+                        clearInterval(countdownInterval);
+                        window.location.href = "/login"; // Redirect after countdown finishes
+                    }
+                }, 1000);
+            } else {
+                // Handle the error case by displaying the error message from the backend
+                const errorMessage = await response.text();
+
+                // Show the error message in the message div
+                messageDiv.style.display = "block";
+                countdownElement.textContent = `Error: ${errorMessage}`;
             }
-        }, 1000);
-    } else {
-        // Handle the error case by displaying the error message from the backend
-        const errorMessage = await response.text();
-        
-        // Show the error message in the message div
-        messageDiv.style.display = "block";
-        countdownElement.textContent = `Error: ${errorMessage}`;
-    }
-});
+        });
     </script>
 </body>
+
 </html>
