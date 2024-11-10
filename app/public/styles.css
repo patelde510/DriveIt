@@ -118,6 +118,7 @@ label {
 input[type="text"],
 input[type="password"],
 input[type="email"] {
+    display: block;
     margin-bottom: 1em;
     padding: 0.7em;
     border: 1px solid #ccc;
