@@ -35,9 +35,35 @@ let cookieOptions = {
 };
 
 app.post("/signup", async (req, res) => {
-    const { username, password } = req.body;
-    if (!username || !password) {
+    const { username, password, name, address, city, state, country, email } = req.body;
+    if (!username || !password || !name || !address || !city || !state || !country || !email) {
         return res.status(400).send("Username and password are required.");
+    }
+
+    // Validation
+    if (username.length < 3 || username.length > 20) {
+        return res.status(400).send("Username must be between 3 and 20 characters.");
+    }
+    if (password.length < 8) {
+        return res.status(400).send("Password must be at least 8 characters long.");
+    }
+    if (!/^[a-zA-Z ]+$/.test(name)) {
+        return res.status(400).send("Name must contain only letters and spaces.");
+    }
+    if (!/^[\w\s,.-]+$/.test(address)) {
+        return res.status(400).send("Address contains invalid characters.");
+    }
+    if (!/^[a-zA-Z ]+$/.test(city)) {
+        return res.status(400).send("City must contain only letters and spaces.");
+    }
+    if (!/^[A-Z]{2}$/.test(state)) {
+        return res.status(400).send("State must be a 2-letter abbreviation.");
+    }
+    if (!/^[a-zA-Z]+$/.test(country)) {
+        return res.status(400).send("Country must contain only letters.");
+    }
+    if (!/^[\w-.]+@[a-zA-Z\d-]+\.[a-z]{2,}$/.test(email)) {
+        return res.status(400).send("Invalid email format.");
     }
 
     // Hash the password
@@ -49,9 +75,8 @@ app.post("/signup", async (req, res) => {
             return res.status(400).send("Username is already taken.");
         }
         // Insert user into the database
-        await pool.query("INSERT INTO CUSTOMER (username, password) VALUES ($1, $2)", [
-            username,
-            hashedPassword,
+        await pool.query("INSERT INTO CUSTOMER (username, password, name, address, city, state, country, email) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)", [
+            username, hashedPassword, name, address, city, state, country, email
         ]);
         res.send("Signup successful. Please log in.");
     } catch (err) {
