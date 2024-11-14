@@ -18,13 +18,21 @@
 
     <!-- Navigation Bar -->
     <nav>
-        <ul>
-            <li><a href="/">Home</a></li>
-            <li><a href="/buy">Buy Car</a></li>
-            <li><a href="/sell">Sell Car</a></li>
-            <li><a href="/login">Login</a></li>
-            <li><a href="/signup">Sign Up</a></li>
-        </ul>
+        <div class="nav-center">
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/buy">Buy Car</a></li>
+                <li><a href="/sell">Sell Car</a></li>
+            </ul>
+        </div>
+        <div id="accountIcon" class="account-icon">
+            <img src="/public/accountIcon.jpg" alt="Account Icon">
+            <div id="dropdownMenu" class="dropdown-menu">
+                <a id="favoritesLink" href="/favorites">Favorites</a>
+                <a id="loginLink" href="/login">Login</a>
+                <a id="signupLink" href="/signup">Sign Up</a>
+            </div>
+        </div>
     </nav>
 
     <div class="container">
@@ -39,6 +47,28 @@
     <footer>
         <p>&copy; 2024 DriveIt - All Rights Reserved</p>
     </footer>
+
+    <script>
+        // Toggle the dropdown when the account icon is clicked
+        document.getElementById('accountIcon').addEventListener('click', function (event) {
+            event.stopPropagation();
+            const dropdownMenu = document.getElementById('dropdownMenu');
+            const accountIcon = document.getElementById('accountIcon');
+            accountIcon.classList.toggle('active');
+            dropdownMenu.style.display = accountIcon.classList.contains('active') ? 'block' : 'none';
+        });
+
+        // Hide the dropdown when clicking outside
+        document.addEventListener('click', function (event) {
+            const dropdownMenu = document.getElementById('dropdownMenu');
+            const accountIcon = document.getElementById('accountIcon');
+
+            if (!accountIcon.contains(event.target)) {
+                accountIcon.classList.remove('active');
+                dropdownMenu.style.display = 'none';
+            }
+        });
+    </script>
 
 </body>
 
