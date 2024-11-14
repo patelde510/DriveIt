@@ -1,6 +1,7 @@
 
 DROP DATABASE IF EXISTS postgres;
 CREATE DATABASE postgres;
+
 \c postgres;
 
 
