@@ -102,7 +102,6 @@ app.post("/login", async (req, res) => {
             const sessionId = uuidv4();
             res.cookie("session_id", sessionId, cookieOptions);
             res.send("Login successful!");
-            res.redirect("/")
         } else {
             res.status(401).send("Invalid username or password.");
         }
