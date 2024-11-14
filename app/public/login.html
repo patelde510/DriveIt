@@ -4,17 +4,34 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h2>Login</h2>
-    <form id="loginForm">
-        <label for="username">Username:</label>
-        <input type="text" id="username" name="username" required>
-        <label for="password">Password:</label>
-        <input type="password" id="password" name="password" required>
-        <button type="submit">Login</button>
-    </form>
-    <div id="errorMessage" style="display: none;"></div>
+    <header>
+        <h1>DriveIt</h1>
+        <p>A platform to buy and sell cars</p>
+    </header>
+    <nav>
+        <ul>
+            <li><a href="/">Home</a></li>
+            <li><a href="/public/signup.html">Sign Up</a></li>
+
+        </ul>
+    </nav>
+    <div class="container-login">
+        <h2>Login</h2>
+        <form id="loginForm">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" required>
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+            <button type="submit">Login</button>
+        </form>
+        <div id="errorMessage" style="display: none;"></div>
+    </div>
+    <footer>
+        <p>© 2024 DriveIt - All Rights Reserved</p>
+    </footer>
     <script>
         document.getElementById("loginForm").addEventListener("submit", async (e) => {
             e.preventDefault();
@@ -40,4 +57,5 @@
         });
     </script>
 </body>
+
 </html>

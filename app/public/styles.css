@@ -143,3 +143,53 @@ button[type="submit"] {
 button[type="submit"]:hover {
     background-color: #737373;
 }
+/* Container styling for login form similar to other sections */
+.container-login {
+    width: 80%;
+    max-width: 600px;
+    margin: 2em auto;
+    padding: 2em;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Form styling for login form */
+#loginForm {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5em;
+}
+
+#loginForm label {
+    font-weight: bold;
+    margin-bottom: 0.5em;
+    color: #4a4a4a;
+}
+
+#loginForm input[type="text"],
+#loginForm input[type="password"] {
+    margin-bottom: 1em;
+    padding: 0.7em;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1em;
+    width: 90%;
+}
+
+#loginForm button[type="submit"] {
+    padding: 0.7em 1.5em;
+    background-color: #4a4a4a;
+    color: #ffffff;
+    border: none;
+    border-radius: 5px;
+    font-size: 1.1em;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    align-self: center;
+    margin-top: 1.5em;
+}
+
+#loginForm button[type="submit"]:hover {
+    background-color: #737373;
+}
