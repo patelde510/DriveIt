@@ -1,9 +1,8 @@
 
-DROP DATABASE IF EXISTS postgres;
-CREATE DATABASE postgres;
-
-\c postgres;
-
+=======
+DROP DATABASE IF EXISTS driveit;
+CREATE DATABASE driveit;
+\c driveit;
 
 -- Create the tables
 
@@ -17,11 +16,12 @@ CREATE TABLE CUSTOMER (
     email VARCHAR(100),
     favorites JSON,
     username VARCHAR(20) NOT NULL,
-    password VARCHAR(100) NOT NULL
+    password VARCHAR(100) NOT NULL,
+    sessionId UUID
 );
 
 CREATE TABLE REVIEW (
-    reviewID INT PRIMARY KEY,
+    reviewID SERIAL PRIMARY KEY,
     custID INT,
     make VARCHAR(20),
     model VARCHAR(20),
@@ -44,7 +44,7 @@ CREATE TABLE VEHICLE (
 );
 
 CREATE TABLE SPECS (
-    specId INT PRIMARY KEY,
+    specId SERIAL PRIMARY KEY,
     vin VARCHAR(17),
     exteriorColor VARCHAR(50),
     interiorColor VARCHAR(50),

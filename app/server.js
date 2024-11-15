@@ -78,10 +78,10 @@ app.post("/signup", async (req, res) => {
         await pool.query("INSERT INTO CUSTOMER (username, password, name, address, city, state, country, email) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)", [
             username, hashedPassword, name, address, city, state, country, email
         ]);
-        res.send("Signup successful. Please log in.");
+        return res.send("Signup successful. Please log in.");
     } catch (err) {
         console.error(err);
-        res.status(500).send("Error signing up. Username might already be taken.");
+        return res.status(500).send("Error signing up. Username might already be taken.");
     }
 });
 
@@ -101,44 +101,74 @@ app.post("/login", async (req, res) => {
             // Generate a unique session ID
             const sessionId = uuidv4();
             res.cookie("session_id", sessionId, cookieOptions);
-            res.send("Login successful!");
+
+            // Insert the session ID into the database
+            await pool.query("UPDATE CUSTOMER SET sessionId = $1 WHERE username = $2", [sessionId, username]);
+
+            return res.send("Login successful!");
         } else {
-            res.status(401).send("Invalid username or password.");
+            return res.status(401).send("Invalid username or password.");
         }
     } catch (err) {
         console.error(err);
-        res.status(500).send("Error logging in.");
+        return res.status(500).send("Error logging in.");
     }
 });
 
 function checkIfLoggedIn(req, res, next) {
-    if (req.cookies.session_id) {
-        return res.redirect("/"); // Redirect to homepage if logged in
+    if (!req.cookies.session_id) {
+        return res.redirect("/login");
     }
-    next(); // Continue to the next middleware if not logged in
+    // If the session_id exists, continue to the next route handler
+    next();
 }
+
+function redirectIfLoggedIn(req, res, next) {
+    if (req.cookies.session_id) {
+        return res.redirect("/");
+    }
+    next(); // Proceed to the login route if not logged in
+}
+
+// Serve the signup, login, and logout HTML pages
+app.get("/signup", redirectIfLoggedIn, (req, res) => {
+    return res.sendFile(__dirname + "/public/signup.html");
+});
+
+app.get("/checkSession", async (req, res) => {
+    const sessionId = req.cookies.session_id;
+    if (!sessionId) {
+        return res.status(401).send("Not logged in.");
+    }
+
+    try {
+        // Retrieve user based on session ID
+        const result = await pool.query("SELECT username FROM CUSTOMER WHERE sessionId = $1", [sessionId]);
+        const user = result.rows[0];
+
+        if (user) {
+            return res.status(200).send(`Check successful, logged in as ${user.username}`);
+        } else {
+            return res.status(401).send("Session not found. Please log in again.");
+        }
+    } catch (err) {
+        console.error(err);
+        return res.status(500).send("Error checking login status.");
+    }
+});
+
+app.get("/login", redirectIfLoggedIn, (req, res) => {
+    return res.sendFile(__dirname + "/public/login.html");
+});
 
 // Logout route
 app.get("/logout", (req, res) => {
     res.clearCookie("session_id", cookieOptions);
-    res.send("Logout successful.");
-});
-
-// Serve the signup, login, and logout HTML pages
-app.get("/signup", checkIfLoggedIn, (req, res) => {
-    res.sendFile(__dirname + "/public/signup.html");
-});
-
-app.get("/login", checkIfLoggedIn, (req, res) => {
-    res.sendFile(__dirname + "/public/login.html");
-});
-
-app.get("/logout", (req, res) => {
-    res.sendFile(__dirname + "/public/logout.html");
+    return res.redirect("/");
 });
 
 app.get("/", (req, res) => {
-    res.sendFile(__dirname + "/public/index.html");
+    return res.sendFile(__dirname + "/public/index.html");
 });
 
 app.listen(port, hostname, () => {
