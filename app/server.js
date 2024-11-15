@@ -117,7 +117,6 @@ app.post("/login", async (req, res) => {
 
 function checkIfLoggedIn(req, res, next) {
     if (!req.cookies.session_id) {
-        console.log("Session ID not found. Redirecting to /login.");
         return res.redirect("/login");
     }
     // If the session_id exists, continue to the next route handler
@@ -126,7 +125,6 @@ function checkIfLoggedIn(req, res, next) {
 
 function redirectIfLoggedIn(req, res, next) {
     if (req.cookies.session_id) {
-        console.log("Already logged in, redirecting to /");
         return res.redirect("/");
     }
     next(); // Proceed to the login route if not logged in
@@ -137,7 +135,7 @@ app.get("/signup", redirectIfLoggedIn, (req, res) => {
     return res.sendFile(__dirname + "/public/signup.html");
 });
 
-app.get("/check", checkIfLoggedIn, async (req, res) => {
+app.get("/checkSession", async (req, res) => {
     const sessionId = req.cookies.session_id;
     if (!sessionId) {
         return res.status(401).send("Not logged in.");
@@ -149,7 +147,7 @@ app.get("/check", checkIfLoggedIn, async (req, res) => {
         const user = result.rows[0];
 
         if (user) {
-            return res.send(`Check successful, logged in as ${user.username}`);
+            return res.status(200).send(`Check successful, logged in as ${user.username}`);
         } else {
             return res.status(401).send("Session not found. Please log in again.");
         }
@@ -166,13 +164,8 @@ app.get("/login", redirectIfLoggedIn, (req, res) => {
 // Logout route
 app.get("/logout", (req, res) => {
     res.clearCookie("session_id", cookieOptions);
-    return res.send("Logout successful.");
+    return res.redirect("/");
 });
-
-app.get("/logout", (req, res) => {
-    return res.sendFile(__dirname + "/public/logout.html");
-});
-
 
 app.get("/", (req, res) => {
     return res.sendFile(__dirname + "/public/index.html");
