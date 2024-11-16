@@ -18,13 +18,22 @@
 
     <!-- Navigation Bar -->
     <nav>
-        <ul>
-            <li><a href="/public/index.html">Home</a></li>
-            <li><a href="/public/buy.html">Buy Car</a></li>
-            <li><a href="/public/sell.html">Sell Car</a></li>
-            <li><a href="/public/login.html">Login</a></li>
-            <li><a href="/public/signup.html">Sign Up</a></li>
-        </ul>
+        <div class="nav-center">
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/buy">Buy Car</a></li>
+                <li><a href="/sell">Sell Car</a></li>
+            </ul>
+        </div>
+        <div id="accountIcon" class="account-icon">
+            <img src="/public/accountIcon.jpg" alt="Account Icon">
+            <div id="dropdownMenu" class="dropdown-menu">
+                <span id="usernameDisplay"></span>
+                <a id="favoritesLink" href="/favorites">Favorites</a>
+                <a id="loginLink" href="/login">Login</a>
+                <a id="signupLink" href="/signup">Sign Up</a>
+            </div>
+        </div>
     </nav>
 
     <div class="container">
@@ -39,6 +48,60 @@
     <footer>
         <p>&copy; 2024 DriveIt - All Rights Reserved</p>
     </footer>
+
+    <script>
+        // Toggle the dropdown when the account icon is clicked
+        document.getElementById('accountIcon').addEventListener('click', function (event) {
+            event.stopPropagation();
+            const dropdownMenu = document.getElementById('dropdownMenu');
+            const accountIcon = document.getElementById('accountIcon');
+            accountIcon.classList.toggle('active');
+            dropdownMenu.style.display = accountIcon.classList.contains('active') ? 'block' : 'none';
+        });
+
+        // Hide the dropdown when clicking outside
+        document.addEventListener('click', function (event) {
+            const dropdownMenu = document.getElementById('dropdownMenu');
+            const accountIcon = document.getElementById('accountIcon');
+
+            if (!accountIcon.contains(event.target)) {
+                accountIcon.classList.remove('active');
+                dropdownMenu.style.display = 'none';
+            }
+        });
+
+        document.addEventListener("DOMContentLoaded", async () => {
+            try {
+                // Check if user is logged in
+                const response = await fetch("/checkSession", {
+                    method: "GET",
+                    credentials: "include"
+                });
+                if (response.ok) {
+                    // User is logged in, update Login to Logout and hide Sign Up
+                    document.getElementById("loginLink").textContent = "Logout";
+                    document.getElementById("loginLink").href = "/logout";
+                    document.getElementById("signupLink").style.display = "none";
+
+
+                    const data = await response.text();
+                    console.log("DATA: " + data);
+                    const username = data.match(/logged in as (\w+)/);  // Extract username from the response
+                    if (username) {
+                        document.getElementById("usernameDisplay").textContent = `Hello, ${username[1]}`;
+                    }
+
+                } else if (response.status === 401) {
+                    // If response is specifically 401 (unauthorized), reset to "Login" and show Sign Up
+                    document.getElementById("loginLink").textContent = "Login";
+                    document.getElementById("loginLink").href = "/login";
+                    document.getElementById("signupLink").style.display = "inline-block"; // Show Sign Up again
+                }
+            } catch (error) {
+                console.log("Error checking if user is logged in or not: ", error);
+            }
+        });
+    </script>
 
 </body>
 

@@ -17,7 +17,8 @@ CREATE TABLE CUSTOMER (
     email VARCHAR(100),
     favorites JSON,
     username VARCHAR(20) NOT NULL,
-    password VARCHAR(100) NOT NULL
+    password VARCHAR(100) NOT NULL,
+    sessionId UUID
 );
 
 CREATE TABLE REVIEW (
