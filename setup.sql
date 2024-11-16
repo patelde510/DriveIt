@@ -1,5 +1,5 @@
 
-=======
+
 DROP DATABASE IF EXISTS driveit;
 CREATE DATABASE driveit;
 \c driveit;
