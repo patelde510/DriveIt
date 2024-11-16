@@ -3,7 +3,7 @@
         "start": "node app/server.js",
         "setup": "fly postgres connect -a driveit-db",
         "start:local": "node app/server.js",
-        "setup:local": "psql -U postgres -d postgres -f setup.sql"
+        "setup:local": "psql -U postgres -f setup.sql"
     },
     "dependencies": {
         "axios": "^1.1.3",
