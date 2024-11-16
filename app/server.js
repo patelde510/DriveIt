@@ -167,6 +167,14 @@ app.get("/logout", (req, res) => {
     return res.redirect("/");
 });
 
+app.get("/buy", (req, res) => {
+    res.sendFile(__dirname + "/public/buy.html")
+})
+
+app.get("/sell", (req, res) => {
+    res.sendFile(__dirname + "/public/sell.html")
+})
+
 app.get("/", (req, res) => {
     return res.sendFile(__dirname + "/public/index.html");
 });
