@@ -169,18 +169,17 @@ app.get("/fetch-api-data", async (req, res) => {
     }
 });
 
-app.get("/get-vehicles", async (req, res) => {
+app.get("/buy", async (req, res) => {
     try {
         const result = await pool.query("SELECT * FROM VEHICLE");
-        res.status(200).json(result.rows); // Send vehicle data as JSON
+        const vehicles = result.rows;
+
+        // Serve the buy.html page with vehicle data
+        res.render("buy", { vehicles });
     } catch (err) {
-        console.error("Error fetching vehicles from the database:", err);
+        console.error("Error fetching vehicles:", err);
         res.status(500).send("Error fetching vehicles");
     }
-});
-
-app.get("/buy", (req, res) => {
-    res.sendFile(__dirname + "/public/buy.html"); // Serve static HTML
 });
 
 
