@@ -1,35 +1,85 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DriveIt - Buy Car</title>
+    <title>DriveIt - Buy Cars</title>
     <link rel="stylesheet" href="/public/styles.css">
 </head>
-<body>
 
+<body>
+    <!-- Header Section -->
     <header>
-        <h1>DriveIt</h1>
-        <p>A platform to buy and sell cars</p>
+        <h1>Buy Cars</h1>
+        <p>Browse our collection of vehicles available for sale</p>
     </header>
-    
+
+    <!-- Navigation Bar -->
     <nav>
         <ul>
             <li><a href="/">Home</a></li>
-            <li><a href="/buy">Buy Car</a></li>
+            <li><a href="/buy" class="active">Buy Car</a></li>
             <li><a href="/sell">Sell Car</a></li>
         </ul>
     </nav>
 
+    <!-- Main Content -->
     <div class="container">
-        <h2>Buy a Car</h2>
-        <p>This page will contain car listings and filters to help you find car.</p>
+        <section id="vehicle-list">
+            <h2>Available Vehicles</h2>
+            <div id="vehicles-container">
+                <!-- Vehicle data will be dynamically populated here -->
+            </div>
+        </section>
     </div>
 
-  
+    <!-- Footer Section -->
     <footer>
         <p>&copy; 2024 DriveIt - All Rights Reserved</p>
     </footer>
 
+    <script>
+        async function fetchVehicles() {
+            try {
+                const response = await fetch("/get-vehicles");
+                if (!response.ok) {
+                    throw new Error("Failed to fetch vehicles");
+                }
+                const vehicles = await response.json();
+
+                const container = document.getElementById("vehicles-container");
+                container.innerHTML = ""; // Clear any existing content
+
+                if (vehicles.length === 0) {
+                    container.innerHTML = "<p>No vehicles available at the moment.</p>";
+                    return;
+                }
+
+                // Create vehicle cards dynamically
+                vehicles.forEach((vehicle) => {
+                    const vehicleCard = document.createElement("div");
+                    vehicleCard.classList.add("vehicle-card");
+                    vehicleCard.innerHTML = `
+                        <h3>${vehicle.make} ${vehicle.model} (${vehicle.yearofmanufacture})</h3>
+                        <ul>
+                            <li><strong>Price:</strong> $${vehicle.price}</li>
+                            <li><strong>Mileage:</strong> ${vehicle.mileage} miles</li>
+                            <li><strong>Condition:</strong> ${vehicle.condition}</li>
+                            <li><strong>Status:</strong> ${vehicle.status}</li>
+                        </ul>
+                    `;
+                    container.appendChild(vehicleCard);
+                });
+            } catch (error) {
+                console.error("Error fetching vehicles:", error);
+                document.getElementById("vehicles-container").innerHTML = "<p>Failed to load vehicles. Please try again later.</p>";
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", fetchVehicles);
+    </script>
 </body>
+
 </html>
+

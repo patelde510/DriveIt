@@ -3,5 +3,6 @@
 	"host": "localhost",
 	"database": "database_name",
 	"password": "YOUR_PASSWORD",
-	"port": 5432
+	"port": 5432,
+	"api_key": "Enter API key"
 }

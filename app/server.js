@@ -121,8 +121,10 @@ app.get("/fetch-api-data", async (req, res) => {
         const fs = require('fs');
         const envConfig = JSON.parse(fs.readFileSync('../env.json', 'utf8'));
         const apiKey = envConfig.api_key;
-        const apiResponse = await fetch(`https://mc-api.marketcheck.com/v2/search/car/active?api_key=${apiKey}&car_type=new&zip=08002&include_relevant_links=true`);
+        const apiResponse = await fetch(`https://mc-api.marketcheck.com/v2/search/car/active?api_key=${apiKey}&car_type=new&zip=19104&include_relevant_links=true`);
         const data = await apiResponse.json();
+
+        console.log(data);
 
         for (const listing of data.listings) {
             const vin = listing.vin;
@@ -164,6 +166,19 @@ app.get("/fetch-api-data", async (req, res) => {
     } catch (error) {
         console.error("Error fetching or inserting data:", error);
         res.status(500).send("Error fetching or inserting data");
+    }
+});
+
+app.get("/buy", async (req, res) => {
+    try {
+        const result = await pool.query("SELECT * FROM VEHICLE");
+        const vehicles = result.rows;
+
+        // Serve the buy.html page with vehicle data
+        res.render("buy", { vehicles });
+    } catch (err) {
+        console.error("Error fetching vehicles:", err);
+        res.status(500).send("Error fetching vehicles");
     }
 });
 
