@@ -1,8 +1,8 @@
 
-
 DROP DATABASE IF EXISTS driveit;
 CREATE DATABASE driveit;
-\c driveit;
+\c driveit
+
 
 -- Create the tables
 
@@ -37,9 +37,9 @@ CREATE TABLE VEHICLE (
     driveTrain VARCHAR(10),
     price INT,
     mileage INT,
-    condition VARCHAR(4) CHECK (Condition IN ('New', 'Used')),
+    condition VARCHAR(4),
     yearOfManufacture INT,
-    status VARCHAR(10) CHECK (Status IN ('Available', 'Pending', 'Sold')),
+    status VARCHAR(10),
     reviewId INT
 );
 
@@ -48,9 +48,9 @@ CREATE TABLE SPECS (
     vin VARCHAR(17),
     exteriorColor VARCHAR(50),
     interiorColor VARCHAR(50),
-    engineType VARCHAR(10) CHECK (engineType IN ('Gas', 'Hybrid', 'Electric')),
+    engineType VARCHAR(10),
     numberOfSeats INT,
-    transmission VARCHAR(10) CHECK (Transmission IN ('Manual', 'Automatic')),
+    transmission VARCHAR(10),
     fuelType VARCHAR(15),
     otherUpgrades JSON
 );

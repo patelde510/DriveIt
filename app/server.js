@@ -1,4 +1,5 @@
 let express = require("express");
+let fetch = require("node-fetch");
 let app = express();
 let hostname;
 let port = 8080;
@@ -114,6 +115,74 @@ app.post("/login", async (req, res) => {
         return res.status(500).send("Error logging in.");
     }
 });
+
+app.get("/fetch-api-data", async (req, res) => {
+    try {
+        const fs = require('fs');
+        const envConfig = JSON.parse(fs.readFileSync('../env.json', 'utf8'));
+        const apiKey = envConfig.api_key;
+        const apiResponse = await fetch(`https://mc-api.marketcheck.com/v2/search/car/active?api_key=${apiKey}&car_type=new&zip=19104&include_relevant_links=true`);
+        const data = await apiResponse.json();
+
+        console.log(data);
+
+        for (const listing of data.listings) {
+            const vin = listing.vin;
+            const make = listing.build?.make;
+            const model = listing.build?.model;
+            const year = listing.build?.year;
+            const price = listing.price;
+            const mileage = listing.miles;
+            const bodyType = listing.build?.body_type;
+            const drivetrain = listing.build?.drivetrain;
+            const condition = listing.inventory_type;
+            const status = listing.status || "active";
+
+            if (vin && make && model && year && price && mileage && bodyType && drivetrain && condition) {
+                await pool.query(
+                    `INSERT INTO Vehicle (vin, make, model, bodytype, drivetrain, price, mileage, condition, yearofmanufacture, status)
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+                    [vin, make, model, bodyType, drivetrain, price, mileage, condition, year, status]
+                );
+
+                const exteriorColor = listing.exterior_color;
+                const interiorColor = listing.interior_color;
+                const engineType = listing.build?.engine;
+                const numSeats = listing.build?.std_seating;
+                const transmission = listing.build?.transmission;
+                const fuelType = listing.build?.fuel_type;
+
+                if (vin && exteriorColor && interiorColor && engineType && numSeats && transmission && fuelType) {
+                    await pool.query(
+                        `INSERT INTO Specs (vin, exteriorcolor, interiorcolor, enginetype, numberofseats, transmission, fueltype)
+                    VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+                        [vin, exteriorColor, interiorColor, engineType, numSeats, transmission, fuelType]
+                    );
+                }
+            }
+        }
+
+        res.status(200).send("Data successfully fetched and inserted into the database");
+    } catch (error) {
+        console.error("Error fetching or inserting data:", error);
+        res.status(500).send("Error fetching or inserting data");
+    }
+});
+
+app.get("/get-vehicles", async (req, res) => {
+    try {
+        const result = await pool.query("SELECT * FROM VEHICLE");
+        res.status(200).json(result.rows); // Send vehicle data as JSON
+    } catch (err) {
+        console.error("Error fetching vehicles from the database:", err);
+        res.status(500).send("Error fetching vehicles");
+    }
+});
+
+app.get("/buy", (req, res) => {
+    res.sendFile(__dirname + "/public/buy.html"); // Serve static HTML
+});
+
 
 function checkIfLoggedIn(req, res, next) {
     if (!req.cookies.session_id) {
