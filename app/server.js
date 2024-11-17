@@ -116,6 +116,8 @@ app.post("/login", async (req, res) => {
     }
 });
 
+
+
 app.get("/fetch-api-data", async (req, res) => {
     try {
         const fs = require('fs');
@@ -169,17 +171,19 @@ app.get("/fetch-api-data", async (req, res) => {
     }
 });
 
-app.get("/buy", async (req, res) => {
+app.get("/get-vehicles", async (req, res) => {
     try {
         const result = await pool.query("SELECT * FROM VEHICLE");
-        const vehicles = result.rows;
-
-        // Serve the buy.html page with vehicle data
-        res.render("buy", { vehicles });
+        res.status(200).json(result.rows); 
     } catch (err) {
-        console.error("Error fetching vehicles:", err);
+        console.error("Error fetching vehicles from the database:", err);
         res.status(500).send("Error fetching vehicles");
     }
+});
+
+
+app.get("/buy", (req, res) => {
+    res.sendFile(__dirname + "/public/buy.html"); // Serve static HTML
 });
 
 
