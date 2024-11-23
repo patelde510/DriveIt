@@ -174,7 +174,7 @@ app.get("/fetch-api-data", async (req, res) => {
 app.get("/get-vehicles", async (req, res) => {
     try {
         const result = await pool.query("SELECT * FROM VEHICLE");
-        res.status(200).json(result.rows); 
+        res.status(200).json(result.rows);
     } catch (err) {
         console.error("Error fetching vehicles from the database:", err);
         res.status(500).send("Error fetching vehicles");
@@ -229,6 +229,129 @@ app.get("/checkSession", async (req, res) => {
     }
 });
 
+
+// Add to favorites
+app.post("/add-to-favorites", async (req, res) => {
+    const { vin } = req.body;
+    const sessionId = req.cookies.session_id;
+
+    if (!vin || !sessionId) {
+        return res.status(400).send("Vehicle VIN and user session are required.");
+    }
+
+    try {
+        // Fetch customer based on session ID
+        const customerResult = await pool.query(
+            "SELECT custid FROM CUSTOMER WHERE sessionId = $1",
+            [sessionId]
+        );
+
+        if (customerResult.rows.length === 0) {
+            return res.status(401).send("Unauthorized user.");
+        }
+
+        const custId = customerResult.rows[0].custid;
+
+        // Check if vehicle is already in favorites
+        const favoriteCheck = await pool.query(
+            "SELECT * FROM FAVORITES WHERE custid = $1 AND vin = $2",
+            [custId, vin]
+        );
+
+        if (favoriteCheck.rows.length > 0) {
+            return res.status(200).send("Vehicle is already in favorites.");
+        }
+
+        // Add to favorites table
+        await pool.query(
+            "INSERT INTO FAVORITES (custid, vin) VALUES ($1, $2)",
+            [custId, vin]
+        );
+
+        res.status(200).send("Vehicle added to favorites.");
+    } catch (err) {
+        console.error("Error adding to favorites:", err);
+        res.status(500).send("Error adding to favorites.");
+    }
+});
+
+// Fetch favorites
+app.get("/get-favorites", async (req, res) => {
+    const sessionId = req.cookies.session_id;
+
+    if (!sessionId) {
+        return res.status(401).send("Unauthorized user.");
+    }
+
+    try {
+        // Fetch customer based on session ID
+        const customerResult = await pool.query(
+            "SELECT custid FROM CUSTOMER WHERE sessionId = $1",
+            [sessionId]
+        );
+
+        if (customerResult.rows.length === 0) {
+            return res.status(401).send("Unauthorized user.");
+        }
+
+        const custId = customerResult.rows[0].custid;
+
+        // Fetch favorited vehicles with all fields
+        const favoritesResult = await pool.query(
+            `SELECT v.vin, v.make, v.model, v.bodytype, v.price, v.yearofmanufacture, 
+                    v.mileage, v.condition, v.status 
+             FROM FAVORITES f 
+             JOIN VEHICLE v ON f.vin = v.vin 
+             WHERE f.custid = $1`,
+            [custId]
+        );
+
+        res.status(200).json(favoritesResult.rows);
+    } catch (err) {
+        console.error("Error fetching favorites:", err);
+        res.status(500).send("Error fetching favorites.");
+    }
+});
+
+
+// Remove from favorites
+app.post("/remove-from-favorites", async (req, res) => {
+    const { vin } = req.body;
+    const sessionId = req.cookies.session_id;
+
+    if (!sessionId) {
+        return res.status(401).send("Unauthorized. Please log in.");
+    }
+
+    try {
+        const customerResult = await pool.query(
+            "SELECT custid FROM CUSTOMER WHERE sessionId = $1",
+            [sessionId]
+        );
+
+        if (customerResult.rows.length === 0) {
+            return res.status(401).send("Unauthorized user.");
+        }
+
+        const custId = customerResult.rows[0].custid;
+
+        const deleteResult = await pool.query(
+            "DELETE FROM FAVORITES WHERE custid = $1 AND vin = $2",
+            [custId, vin]
+        );
+
+        if (deleteResult.rowCount === 0) {
+            return res.status(404).send("Vehicle not found in favorites.");
+        }
+
+        res.status(200).send({ message: "Vehicle successfully removed from favorites." });
+    } catch (err) {
+        console.error("Error removing vehicle from favorites:", err);
+        res.status(500).send("Error removing vehicle from favorites.");
+    }
+});
+
+
 app.get("/login", redirectIfLoggedIn, (req, res) => {
     return res.sendFile(__dirname + "/public/login.html");
 });
@@ -250,6 +373,11 @@ app.get("/sell", (req, res) => {
 app.get("/", (req, res) => {
     return res.sendFile(__dirname + "/public/index.html");
 });
+
+app.get("/favorites", (req, res) => {
+    res.sendFile(__dirname + "/public/favorites.html");
+});
+
 
 app.listen(port, hostname, () => {
     console.log(`http://${hostname}:${port}`);

@@ -280,6 +280,8 @@ nav {
     background-color: #fff;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     text-align: left;
+    margin-bottom: 1rem;
+    width: 250px;
 }
 
 .vehicle-card h3 {
@@ -288,13 +290,29 @@ nav {
     color: #0d6efd;
 }
 
-.vehicle-card p {
-    margin: 0.5rem 0;
-    font-size: 0.9rem;
-    color: #555;
+.vehicle-card ul {
+    padding: 0;
+    list-style: none;
 }
 
+.vehicle-card ul li {
+    margin: 0.5rem 0;
+    font-size: 0.9rem;
+}
 
+.vehicle-card button {
+    margin-top: 1rem;
+    padding: 0.5rem 1rem;
+    background-color: #0d6efd;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.vehicle-card button:hover {
+    background-color: #004fbf;
+}
 
 .account-icon.active .dropdown-menu {
     display: block;
