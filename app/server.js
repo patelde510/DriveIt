@@ -397,10 +397,10 @@ app.get("/get-favorites", checkIfLoggedIn, async (req, res) => {
             [custId]
         );
 
-        res.status(200).json(favoritesResult.rows);
+        return res.status(200).json(favoritesResult.rows);
     } catch (err) {
         console.error("Error fetching favorites:", err);
-        res.status(500).send("Error fetching favorites.");
+        return res.status(500).send("Error fetching favorites.");
     }
 });
 
@@ -434,11 +434,11 @@ app.post("/remove-from-favorites", async (req, res) => {
         if (deleteResult.rowCount === 0) {
             return res.status(404).send("Vehicle not found in favorites.");
         }
-
-        res.status(200).send({ message: "Vehicle successfully removed from favorites." });
+        
+        return res.status(200).send({ message: "Vehicle successfully removed from favorites." });
     } catch (err) {
         console.error("Error removing vehicle from favorites:", err);
-        res.status(500).send("Error removing vehicle from favorites.");
+        return res.status(500).send("Error removing vehicle from favorites.");
     }
 });
 
