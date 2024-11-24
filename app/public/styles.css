@@ -300,6 +300,51 @@ nav {
     display: block;
 }
 
+#search-bar {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column; /* Stacks the elements */
+    gap: 10px;
+}
+
+#search-input {
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+#search-controls {
+    display: flex;
+    flex-wrap: wrap; /* Ensures items adjust for smaller screens */
+    gap: 10px;
+}
+
+#search-button {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    flex-shrink: 0; /* Prevents shrinking */
+}
+
+#search-button:hover {
+    background-color: #0056b3;
+}
+
+#type-select,
+#year-select,
+#model-select {
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    flex: 1; /* Makes dropdowns flexible */
+    min-width: 120px; /* Sets a minimum width for smaller screens */
+}
 .form-group {
     display: flex;
     align-items: center;
