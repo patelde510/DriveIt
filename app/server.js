@@ -231,7 +231,7 @@ app.get("/checkSession", async (req, res) => {
 
 
 // Add to favorites
-app.post("/add-to-favorites", async (req, res) => {
+app.post("/add-to-favorites", checkIfLoggedIn, async (req, res) => {
     const { vin } = req.body;
     const sessionId = req.cookies.session_id;
 
@@ -276,7 +276,7 @@ app.post("/add-to-favorites", async (req, res) => {
 });
 
 // Fetch favorites
-app.get("/get-favorites", async (req, res) => {
+app.get("/get-favorites", checkIfLoggedIn, async (req, res) => {
     const sessionId = req.cookies.session_id;
 
     if (!sessionId) {
@@ -374,7 +374,7 @@ app.get("/", (req, res) => {
     return res.sendFile(__dirname + "/public/index.html");
 });
 
-app.get("/favorites", (req, res) => {
+app.get("/favorites", checkIfLoggedIn, (req, res) => {
     res.sendFile(__dirname + "/public/favorites.html");
 });
 
