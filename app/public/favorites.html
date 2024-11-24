@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Favorites</title>
+    <link rel="stylesheet" href="/public/styles.css">
+</head>
+
+<body>
+    <header>
+        <h1>Favorites</h1>
+        <p>Your favorite cars listed here</p>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="/">Home</a></li>
+            <li><a href="/buy">Buy Car</a></li>
+            <li><a href="/sell">Sell Car</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <section id="favorites-list">
+            <h2>Favorited Vehicles</h2>
+            <div id="favorites-container"></div>
+        </section>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 DriveIt - All Rights Reserved</p>
+    </footer>
+
+    <script>
+        async function fetchFavorites() {
+            try {
+                const response = await fetch("/get-favorites");
+                if (!response.ok) {
+                    throw new Error("Failed to fetch favorites");
+                }
+                const favorites = await response.json();
+
+                const container = document.getElementById("favorites-container");
+
+                if (favorites.length === 0) {
+                    container.innerHTML = "<p>You have no favorite vehicles.</p>";
+                    return;
+                }
+
+                // Generate vehicle cards
+                const favoriteCards = favorites.map((vehicle) => `
+            <div class="vehicle-card" data-vin="${vehicle.vin}">
+                <h3>${vehicle.make} ${vehicle.model} (${vehicle.yearofmanufacture})</h3>
+                <ul>
+                    <li><strong>Price:</strong> $${vehicle.price}</li>
+                    <li><strong>Mileage:</strong> ${vehicle.mileage || 'N/A'} miles</li>
+                    <li><strong>Condition:</strong> ${vehicle.condition || 'N/A'}</li>
+                    <li><strong>Status:</strong> ${vehicle.status || 'N/A'}</li>
+                </ul>
+                <button onclick="removeFromFavorites('${vehicle.vin}')">Remove from Favorites</button>
+            </div>
+        `).join("");
+
+                // Update the container after data is ready
+                container.innerHTML = favoriteCards;
+            } catch (error) {
+                console.error("Error fetching favorites:", error);
+                document.getElementById("favorites-container").innerHTML = "<p>Failed to load favorites. Please try again later.</p>";
+            }
+        }
+
+
+        async function removeFromFavorites(vin) {
+            try {
+                const response = await fetch("/remove-from-favorites", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ vin }),
+                });
+
+                if (!response.ok) {
+                    throw new Error(await response.text());
+                }
+
+                alert("Vehicle successfully removed from favorites.");
+
+                // Remove the card for the removed vehicle
+                const card = document.querySelector(`.vehicle-card[data-vin="${vin}"]`);
+                if (card) {
+                    card.remove();
+                }
+            } catch (err) {
+                console.error("Error removing from favorites:", err);
+                alert(`Error removing from favorites: ${err.message}`);
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", fetchFavorites);
+    </script>
+</body>
+
+</html>

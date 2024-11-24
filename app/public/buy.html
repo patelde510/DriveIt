@@ -96,12 +96,34 @@
                             <li><strong>Condition:</strong> ${vehicle.condition}</li>
                             <li><strong>Status:</strong> ${vehicle.status}</li>
                         </ul>
+                        <button onclick="addToFavorites('${vehicle.vin}')">Add to Favorites</button>
                     `;
                     container.appendChild(vehicleCard);
                 });
             } catch (error) {
                 console.error("Error fetching vehicles:", error);
                 document.getElementById("vehicles-container").innerHTML = "<p>Failed to load vehicles. Please try again later.</p>";
+            }
+        }
+
+        async function addToFavorites(vin) {
+            try {
+                const response = await fetch("/add-to-favorites", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ vin }),
+                });
+
+                if (response.ok) {
+                    alert("Vehicle added to favorites!");
+                    fetchVehicles();
+                } else {
+                    const errorText = await response.text();
+                    alert(`Error adding to favorites: ${errorText}`);
+                }
+            } catch (err) {
+                console.error("Error adding to favorites:", err);
+                alert("Error adding to favorites. Please try again.");
             }
         }
 
@@ -152,4 +174,3 @@
 </body>
 
 </html>
-
