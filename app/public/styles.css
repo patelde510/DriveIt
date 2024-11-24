@@ -317,3 +317,156 @@ nav {
 .account-icon.active .dropdown-menu {
     display: block;
 }
+
+#search-bar {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column; /* Stacks the elements */
+    gap: 10px;
+}
+
+#search-input {
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+#search-controls {
+    display: flex;
+    flex-wrap: wrap; /* Ensures items adjust for smaller screens */
+    gap: 10px;
+}
+
+#search-button {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    flex-shrink: 0; /* Prevents shrinking */
+}
+
+#search-button:hover {
+    background-color: #0056b3;
+}
+
+#type-select,
+#year-select,
+#model-select {
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    flex: 1; /* Makes dropdowns flexible */
+    min-width: 120px; /* Sets a minimum width for smaller screens */
+}
+.form-group {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; 
+    gap: 1rem; 
+    margin: 3% auto;
+    max-width: 1200px;
+    padding: 0 2rem;
+}
+
+#make, #model, #year {
+    margin-top: 16px;
+}
+
+#make, #model, #year, #addCar {
+    flex: 1;
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+#addCar, #compareButton {
+    padding: 0.5rem 1rem;
+    background-color: #0d6efd;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+#addCar:hover, #compareButton:hover {
+    background-color: #0056b3;
+}
+
+#vehicleTable {
+    width: 50%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+}
+
+#vehicleTable th, #vehicleTable td {
+    padding: 0.5rem;
+    text-align: left;
+    border: 2px solid #060303;
+}
+
+#vehicleTable th {
+    background-color: #f4f4f9;
+    font-weight: bold;
+}
+
+#vehicleTable tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+#vehicleTable tr:hover {
+    background-color: #eaeaea;
+}
+
+.delete-btn {
+    background-color: red;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.delete-btn:hover {
+    background-color: darkred; 
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2); 
+    transform: scale(1.05);
+    transition: all 0.2s ease-in-out; 
+}
+
+.delete-btn:focus {
+    outline: none;
+    background-color: crimson;
+}
+
+#comparisonTable {
+    width: 50%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+}
+
+#comparisonTable th, #comparisonTable td {
+    padding: 0.5rem;
+    text-align: left;
+    border: 2px solid #060303;
+}
+
+#comparisonTable th {
+    background-color: #f4f4f9;
+    font-weight: bold;
+}
+
+#comparisonTable tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+#comparisonTable tr:hover {
+    background-color: #eaeaea;
+}

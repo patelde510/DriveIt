@@ -116,6 +116,35 @@ app.post("/login", async (req, res) => {
     }
 });
 
+app.post("/compare", async (req, res) => {
+    const vehicles = req.body.vehicles;
+    const vehicleData = [];
+
+    if (Array.isArray(vehicles)) {
+        try {
+            for (const vehicle of vehicles) {
+                const { make, model, year } = vehicle;
+                console.log(`Make: ${make}, Model: ${model}, Year: ${year}`);
+
+                const result = await pool.query(
+                    "SELECT * FROM VEHICLE WHERE make = $1 AND model = $2 AND yearOfManufacture = $3",
+                    [make, model, year]
+                );
+
+                result.rows.forEach(row => {
+                    vehicleData.push(row);
+                });
+            }
+
+            return res.status(200).json({ vehicleData });
+        } catch (error) {
+            return res.status(500).json({ error: "An error occurred while processing vehicles." });
+        }
+    } else {
+        return res.status(400).json({ error: "Invalid data format. Expected an array of vehicles." });
+    }
+});
+
 
 
 app.get("/fetch-api-data", async (req, res) => {
@@ -173,7 +202,51 @@ app.get("/fetch-api-data", async (req, res) => {
 
 app.get("/get-vehicles", async (req, res) => {
     try {
-        const result = await pool.query("SELECT * FROM VEHICLE");
+        // Extract filters from query params
+        const { yearofmanufacture, condition, makeOrModel } = req.query; 
+        let query = "SELECT * FROM vehicle";
+        const queryParams = [];
+        const conditions = [];
+        let queryNum = 1;
+
+        // Add conditions to query list
+        if (condition) {
+            conditions.push(`condition = $${queryNum}`);
+            queryParams.push(condition.toLowerCase());
+            queryNum += 1;
+        }
+
+        if (yearofmanufacture) {
+            conditions.push(`yearofmanufacture = $${queryNum}`);
+            queryParams.push(yearofmanufacture);
+            queryNum += 1;
+        }
+
+        if (makeOrModel) {
+            let splitText = makeOrModel.split(/\s+/);
+            if (splitText.length == 2) {
+                conditions.push(`(make = $${queryNum} AND model = $${queryNum + 1})`);
+                queryParams.push(splitText[0].charAt(0).toUpperCase() + splitText[0].slice(1).toLowerCase());
+                queryParams.push(splitText[1].charAt(0).toUpperCase() + splitText[1].slice(1).toLowerCase());
+                queryNum += 2;
+            } else if (splitText.length == 1) {
+                conditions.push(`(make = $${queryNum} OR model = $${queryNum})`);
+                queryParams.push(splitText[0].charAt(0).toUpperCase() + splitText[0].slice(1).toLowerCase());
+                queryNum += 2;
+            } else {
+                // This case if for anything more than two words, it should throw off the query and return nothing
+                conditions.push(`make = $${queryNum}`);
+                queryParams.push(makeOrModel);
+                queryNum += 1;
+            }
+        }
+
+        // Add WHERE clause if there are conditions
+        if (conditions.length > 0) {
+            query += ` WHERE ${conditions.join(" AND ")}`;
+        }
+
+        const result = await pool.query(query, queryParams);
         res.status(200).json(result.rows);
     } catch (err) {
         console.error("Error fetching vehicles from the database:", err);
@@ -181,6 +254,20 @@ app.get("/get-vehicles", async (req, res) => {
     }
 });
 
+app.get("/get-filters", async (req, res) => {
+    try {
+        const conditionsResult = await pool.query("SELECT DISTINCT LOWER(condition) as condition FROM vehicle ORDER BY condition");
+        const yearResult = await pool.query("SELECT DISTINCT yearofmanufacture FROM vehicle ORDER BY yearofmanufacture DESC");
+
+        res.status(200).json({
+            conditions: conditionsResult.rows,
+            years: yearResult.rows,
+        });
+    } catch (error) {
+        console.error("Error fetching filter data:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
 
 app.get("/buy", (req, res) => {
     res.sendFile(__dirname + "/public/buy.html"); // Serve static HTML
@@ -228,6 +315,10 @@ app.get("/checkSession", async (req, res) => {
         return res.status(500).send("Error checking login status.");
     }
 });
+
+app.get("/compare", (req, res) => {
+    res.sendFile(__dirname + "/public/compare.html");
+})
 
 
 // Add to favorites
