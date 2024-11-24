@@ -116,6 +116,35 @@ app.post("/login", async (req, res) => {
     }
 });
 
+app.post("/compare", async (req, res) => {
+    const vehicles = req.body.vehicles;
+    const vehicleData = [];
+
+    if (Array.isArray(vehicles)) {
+        try {
+            for (const vehicle of vehicles) {
+                const { make, model, year } = vehicle;
+                console.log(`Make: ${make}, Model: ${model}, Year: ${year}`);
+
+                const result = await pool.query(
+                    "SELECT * FROM VEHICLE WHERE make = $1 AND model = $2 AND yearOfManufacture = $3",
+                    [make, model, year]
+                );
+
+                result.rows.forEach(row => {
+                    vehicleData.push(row);
+                });
+            }
+
+            return res.status(200).json({ vehicleData });
+        } catch (error) {
+            return res.status(500).json({ error: "An error occurred while processing vehicles." });
+        }
+    } else {
+        return res.status(400).json({ error: "Invalid data format. Expected an array of vehicles." });
+    }
+});
+
 
 
 app.get("/fetch-api-data", async (req, res) => {
@@ -286,6 +315,10 @@ app.get("/checkSession", async (req, res) => {
         return res.status(500).send("Error checking login status.");
     }
 });
+
+app.get("/compare", (req, res) => {
+    res.sendFile(__dirname + "/public/compare.html");
+})
 
 app.get("/login", redirectIfLoggedIn, (req, res) => {
     return res.sendFile(__dirname + "/public/login.html");

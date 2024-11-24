@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compare Vehicles</title>
+    <link rel="stylesheet" href="/public/styles.css">
+</head>
+
+<body>
+    <header>
+        <h1>Compare Vehicles</h1>
+    </header>
+    <!-- Navigation Bar -->
+    <nav>
+        <ul>
+            <li><a href="/">Home</a></li>
+            <li><a href="/buy" class="active">Buy Car</a></li>
+            <li><a href="/sell">Sell Car</a></li>
+        </ul>
+    </nav>
+
+    <div class="form-group">
+        <input type="text" id="make" placeholder="Make (e.g. Honda)">
+        <input type="text" id="model" placeholder="Model (e.g. CR-V)">
+        <input type="text" id="year" placeholder="Year (e.g. 2020)">
+        <button id="addCar">Add</button>
+    </div>
+
+    <div class="vehicle-list" id="vehicleListContainer">
+        <h3>Selected Vehicles</h3>
+        <table id="vehicleTable" style="display: none;">
+            <thead id="vehicleTableHeader" style="display: none;">
+                <tr>
+                    <th>Make</th>
+                    <th>Model</th>
+                    <th>Year</th>
+                </tr>
+            </thead>
+            <tbody id="vehicleList"></tbody>
+        </table>
+    </div>
+
+
+    <button class="compare-btn" id="compareButton" disabled>Compare</button>
+
+    <div class="comparison-results" id="comparisonResultsContainer" style="margin-top: 20px;">
+        <h3>Comparison Results</h3>
+        <table id="comparisonTable" style="display: none;">
+            <thead>
+                <tr>
+                    <th>Car</th>
+                    <th>Price</th>
+                    <th>Body Type</th>
+                    <th>Drive Train</th>
+                    <th>Mileage</th>
+                    <th>Condition</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="comparisonTableBody"></tbody>
+        </table>
+    </div>
+
+    <script>
+
+        const makeInput = document.getElementById('make');
+        const modelInput = document.getElementById('model');
+        const yearInput = document.getElementById('year');
+        const addCarButton = document.getElementById('addCar');
+        const vehicleTable = document.getElementById('vehicleTable');
+        const vehicleTableHeader = document.getElementById('vehicleTableHeader');
+        const vehicleTableBody = document.getElementById('vehicleList');
+        const compareButton = document.getElementById('compareButton');
+
+        const selectedVehicles = [];
+
+        addCarButton.addEventListener('click', () => {
+            const make = makeInput.value.trim();
+            const model = modelInput.value.trim();
+            const year = yearInput.value.trim();
+
+            if (make && model && year) {
+                const vehicle = { make, model, year };
+                selectedVehicles.push(vehicle);
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+            <td>${make}</td>
+            <td>${model}</td>
+            <td>${year}</td>
+            <td><button class="delete-btn">Remove</button></td>
+        `;
+
+                vehicleTableBody.appendChild(row);
+
+                if (selectedVehicles.length === 1) {
+                    vehicleTable.style.display = 'table';
+                    vehicleTableHeader.style.display = 'table-header-group';
+                }
+
+                const deleteButton = row.querySelector('.delete-btn');
+                deleteButton.addEventListener('click', () => {
+                    // Remove the row from the table
+                    vehicleTableBody.removeChild(row);
+
+                    // Remove the vehicle from the array
+                    const index = selectedVehicles.findIndex(v => v.make === make && v.model === model && v.year === year);
+                    if (index > -1) {
+                        selectedVehicles.splice(index, 1);
+                    }
+
+                    if (selectedVehicles.length === 0) {
+                        compareButton.disabled = true;
+                        vehicleTable.style.display = "none";
+                        vehicleTableHeader.style.display = "none";
+                    }
+                });
+
+                makeInput.value = '';
+                modelInput.value = '';
+                yearInput.value = '';
+
+                compareButton.disabled = false;
+            } else {
+                alert('Please enter make, model, and year!');
+            }
+            console.log(JSON.stringify(selectedVehicles));
+        });
+
+        compareButton.addEventListener('click', () => {
+            if (selectedVehicles.length > 0) {
+                fetch("/compare", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ vehicles: selectedVehicles })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log("Response from server:", data);
+
+                        const comparisonTable = document.getElementById('comparisonTable');
+                        const comparisonTableBody = document.getElementById('comparisonTableBody');
+
+                        // Clear existing rows
+                        comparisonTableBody.innerHTML = '';
+
+                        if (data.vehicleData && Array.isArray(data.vehicleData)) {
+                            data.vehicleData.forEach(vehicle => {
+                                const row = document.createElement('tr');
+                                row.innerHTML = `
+                            <td>${vehicle.make} ${vehicle.model} (${vehicle.yearofmanufacture})</td>
+                            <td>${vehicle.price}</td>
+                            <td>${vehicle.bodytype}</td>
+                            <td>${vehicle.drivetrain}</td>
+                            <td>${vehicle.mileage}</td>
+                            <td>${vehicle.condition}</td>
+                            <td>${vehicle.status}</td>
+                        `;
+                                comparisonTableBody.appendChild(row);
+                            });
+
+                            comparisonTable.style.display = 'table';
+                        } else {
+                            alert("No vehicle data found for comparison!");
+                        }
+                    })
+                    .catch(error => console.error("Error:", error));
+            }
+        });
+
+
+    </script>
+</body>
+
+</html>
