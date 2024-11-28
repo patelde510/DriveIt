@@ -325,14 +325,17 @@ nav {
     gap: 10px;
 }
 
-#search-input {
+#make-input,
+#model-input {
     padding: 10px;
     font-size: 16px;
     border: 1px solid #ccc;
     border-radius: 5px;
+    flex: 1;
 }
 
-#search-controls {
+#search-controls-1,
+#search-controls-2 {
     display: flex;
     flex-wrap: wrap; /* Ensures items adjust for smaller screens */
     gap: 10px;
@@ -346,22 +349,31 @@ nav {
     color: white;
     border: none;
     border-radius: 5px;
-    flex-shrink: 0; /* Prevents shrinking */
+    flex-shrink: 0;
+    height: 40px;
 }
 
 #search-button:hover {
     background-color: #0056b3;
 }
 
-#type-select,
-#year-select,
-#model-select {
+#year-input {
     padding: 10px;
     font-size: 16px;
     border: 1px solid #ccc;
     border-radius: 5px;
-    flex: 1; /* Makes dropdowns flexible */
-    min-width: 120px; /* Sets a minimum width for smaller screens */
+    flex: 1;
+    min-width: 120px;
+}
+
+#type-select {
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    flex: 1;
+    min-width: 120px;
+    height: 40px;
 }
 .form-group {
     display: flex;
