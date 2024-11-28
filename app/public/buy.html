@@ -31,15 +31,16 @@
             <h2>Available Vehicles</h2>
 
             <div id="search-bar">
-                <input type="text" id="search-input" placeholder="Search by make or model..." />
-                <div id="search-controls">
+                <div id="search-controls-1">
+                    <input type="text" id="make-input" placeholder="Search by make..." />
+                    <input type="text" id="model-input" placeholder="Search by model..." />
+                </div>
+                <div id="search-controls-2">
+                    <input type="text" id="year-input" placeholder="Input year..." />
                     <select id="type-select">
                         <option value="">All Conditions</option>
-                        <!-- Add options dynamically in JavaScript -->
-                    </select>
-                    <select id="year-select">
-                        <option value="">All Years</option>
-                        <!-- Add options dynamically in JavaScript -->
+                        <option value="New">New</option>
+                        <option value="used">Used</option>
                     </select>
                     <button id="search-button">Search</button>
                 </div>
@@ -59,26 +60,37 @@
     <script>
         async function fetchVehicles() {
             try {
-                const searchInput = document.getElementById("search-input").value;
-                const year = document.getElementById("year-select").value;
+                const makeInput = document.getElementById("make-input").value;
+                const modelInput = document.getElementById("model-input").value;
+                const year = document.getElementById("year-input").value;
                 const condition = document.getElementById("type-select").value;
                 
                 // Include the filter only if it's selected
                 const queryParams = new URLSearchParams({
+                    make: makeInput || "",
+                    model: modelInput || "",
                     yearofmanufacture: year || "",
-                    condition: condition || "",
-                    makeOrModel: searchInput || ""
+                    condition: condition || ""
                 });
 
-                const response = await fetch(`/get-vehicles?${queryParams.toString()}`);
+                let response = await fetch(`/get-vehicles?${queryParams.toString()}`);
+
                 if (!response.ok) {
                     throw new Error("Failed to fetch vehicles");
                 }
 
-                const vehicles = await response.json();
+                let vehicles = await response.json();
                 const container = document.getElementById("vehicles-container");
                 container.innerHTML = ""; // Clear existing content
 
+                // If no vehicles in database that match filters, query the API
+                if (vehicles.length == 0) {
+                    const fetchApiResponse = await fetch(`/fetch-api-for-buy?${queryParams.toString()}`);
+                    response = await fetch(`/get-vehicles?${queryParams.toString()}`);
+                    vehicles = await response.json();
+                }
+
+                // If nothing again even from API, then display no matches.
                 if (vehicles.length === 0) {
                     container.innerHTML = "<p>No vehicles available matching your filters.</p>";
                     return;
@@ -127,22 +139,6 @@
             }
         }
 
-        async function fetchFilterOptions() {
-            try {
-                const response = await fetch("/get-filters");
-                if (!response.ok) {
-                    throw new Error("Failed to fetch filter options");
-                }
-                const { years, conditions } = await response.json();
-
-                // Mapping turns json format to list with just list with values needed EX: {condition: 'used', condition: 'new'} ---> ['used, 'new']
-                populateDropdown("year-select", years.map(item => item.yearofmanufacture));
-                populateDropdown("type-select", conditions.map(item => item.condition.charAt(0).toUpperCase() + item.condition.slice(1).toLowerCase())); // Uppercase first letter
-            } catch (error) {
-                console.error("Error fetching filter options:", error);
-            }
-        }
-
         function populateDropdown(selectId, options) {
             const selectElement = document.getElementById(selectId);
             options.forEach(option => {
@@ -152,21 +148,22 @@
 
         document.addEventListener("DOMContentLoaded", () => {
             fetchVehicles();
-            fetchFilterOptions();
 
             const searchButton = document.getElementById("search-button");
-            const searchInput = document.getElementById("search-input");
+            const makeInput = document.getElementById("make-input");
+            const modelInput = document.getElementById("model-input");
             const typeSelect = document.getElementById("type-select");
-            const yearSelect = document.getElementById("year-select");
+            const yearInput = document.getElementById("year-input");
 
             // Search button click handler
             searchButton.addEventListener("click", () => {
-                const searchQuery = searchInput.value;
                 const filters = {
+                    make: makeInput.value,
+                    model: modelInput.value,
                     type: typeSelect.value,
-                    year: yearSelect.value,
+                    year: yearInput.value,
                 };
-                fetchVehicles(searchQuery, filters);
+                fetchVehicles(filters);
             });
         });
         

@@ -145,7 +145,79 @@ app.post("/compare", async (req, res) => {
     }
 });
 
+app.get("/fetch-api-for-buy", async (req, res) => {
+    try {
+        const fs = require('fs');
+        const envConfig = JSON.parse(fs.readFileSync('env.json', 'utf8'));
+        const apiKey = envConfig.api_key;
+        let apiURL = `https://mc-api.marketcheck.com/v2/search/car/active?api_key=${apiKey}&include_relevant_links=true&radius=50`;
 
+        // Extract filters from query params
+        const { make, model, yearofmanufacture, condition } = req.query; 
+
+        if (make) {
+            apiURL += `&make=${make}`;
+        }
+
+        if (model) {
+            apiURL += `&model=${model}`;
+        }
+
+        if (condition) {
+            apiURL += `&car_type=${condition.toLowerCase()}`;
+        }
+
+        if (yearofmanufacture) {
+            apiURL += `&year=${yearofmanufacture}`;
+        }
+
+        const apiResponse = await fetch(apiURL);
+        const data = await apiResponse.json();
+
+        console.log(data);
+
+        for (const listing of data.listings) {
+            const vin = listing.vin;
+            const make = listing.build?.make;
+            const model = listing.build?.model;
+            const year = listing.build?.year;
+            const price = listing.price;
+            const mileage = listing.miles;
+            const bodyType = listing.build?.body_type;
+            const drivetrain = listing.build?.drivetrain;
+            const condition = listing.inventory_type;
+            const status = listing.status || "active";
+
+            if (vin && make && model && year && price && mileage && bodyType && drivetrain && condition) {
+                await pool.query(
+                    `INSERT INTO Vehicle (vin, make, model, bodytype, drivetrain, price, mileage, condition, yearofmanufacture, status)
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+                    [vin, make, model, bodyType, drivetrain, price, mileage, condition, year, status]
+                );
+
+                const exteriorColor = listing.exterior_color;
+                const interiorColor = listing.interior_color;
+                const engineType = listing.build?.engine;
+                const numSeats = listing.build?.std_seating;
+                const transmission = listing.build?.transmission;
+                const fuelType = listing.build?.fuel_type;
+
+                if (vin && exteriorColor && interiorColor && engineType && numSeats && transmission && fuelType) {
+                    await pool.query(
+                        `INSERT INTO Specs (vin, exteriorcolor, interiorcolor, enginetype, numberofseats, transmission, fueltype)
+                    VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+                        [vin, exteriorColor, interiorColor, engineType, numSeats, transmission, fuelType]
+                    );
+                }
+            }
+        }
+
+        res.status(200).send("Data successfully fetched and inserted into the database");
+    } catch (error) {
+        console.error("Error fetching or inserting data:", error);
+        res.status(500).send("Error fetching or inserting data");
+    }
+});
 
 app.get("/fetch-api-data", async (req, res) => {
     try {
@@ -203,13 +275,24 @@ app.get("/fetch-api-data", async (req, res) => {
 app.get("/get-vehicles", async (req, res) => {
     try {
         // Extract filters from query params
-        const { yearofmanufacture, condition, makeOrModel } = req.query; 
+        const { make, model, yearofmanufacture, condition } = req.query; 
         let query = "SELECT * FROM vehicle";
         const queryParams = [];
         const conditions = [];
         let queryNum = 1;
 
-        // Add conditions to query list
+        if (make) {
+            conditions.push(`LOWER(make) = $${queryNum}`);
+            queryParams.push(make.toLowerCase());
+            queryNum += 1;
+        }
+
+        if (model) {
+            conditions.push(`LOWER(model) = $${queryNum}`);
+            queryParams.push(model.toLowerCase());
+            queryNum += 1;
+        }
+
         if (condition) {
             conditions.push(`condition = $${queryNum}`);
             queryParams.push(condition.toLowerCase());
@@ -222,25 +305,6 @@ app.get("/get-vehicles", async (req, res) => {
             queryNum += 1;
         }
 
-        if (makeOrModel) {
-            let splitText = makeOrModel.split(/\s+/);
-            if (splitText.length == 2) {
-                conditions.push(`(make = $${queryNum} AND model = $${queryNum + 1})`);
-                queryParams.push(splitText[0].charAt(0).toUpperCase() + splitText[0].slice(1).toLowerCase());
-                queryParams.push(splitText[1].charAt(0).toUpperCase() + splitText[1].slice(1).toLowerCase());
-                queryNum += 2;
-            } else if (splitText.length == 1) {
-                conditions.push(`(make = $${queryNum} OR model = $${queryNum})`);
-                queryParams.push(splitText[0].charAt(0).toUpperCase() + splitText[0].slice(1).toLowerCase());
-                queryNum += 2;
-            } else {
-                // This case if for anything more than two words, it should throw off the query and return nothing
-                conditions.push(`make = $${queryNum}`);
-                queryParams.push(makeOrModel);
-                queryNum += 1;
-            }
-        }
-
         // Add WHERE clause if there are conditions
         if (conditions.length > 0) {
             query += ` WHERE ${conditions.join(" AND ")}`;
@@ -251,21 +315,6 @@ app.get("/get-vehicles", async (req, res) => {
     } catch (err) {
         console.error("Error fetching vehicles from the database:", err);
         res.status(500).send("Error fetching vehicles");
-    }
-});
-
-app.get("/get-filters", async (req, res) => {
-    try {
-        const conditionsResult = await pool.query("SELECT DISTINCT LOWER(condition) as condition FROM vehicle ORDER BY condition");
-        const yearResult = await pool.query("SELECT DISTINCT yearofmanufacture FROM vehicle ORDER BY yearofmanufacture DESC");
-
-        res.status(200).json({
-            conditions: conditionsResult.rows,
-            years: yearResult.rows,
-        });
-    } catch (error) {
-        console.error("Error fetching filter data:", error);
-        res.status(500).json({ error: "Internal Server Error" });
     }
 });
 
