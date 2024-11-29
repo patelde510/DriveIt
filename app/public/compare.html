@@ -9,12 +9,10 @@
 </head>
 
 <body>
-    <!-- Header Section -->
     <header>
         <h1>DriveIt</h1>
     </header>
-    
-    <!-- Navigation Bar -->
+
     <nav>
         <ul>
             <li><a href="/">Home</a></li>
@@ -23,164 +21,124 @@
         </ul>
     </nav>
 
-    <div class="form-group">
-        <input type="text" id="make" placeholder="Make (e.g. Honda)">
-        <input type="text" id="model" placeholder="Model (e.g. CR-V)">
-        <input type="text" id="year" placeholder="Year (e.g. 2020)">
-        <button id="addCar">Add</button>
+    <div id="compareTab">
+        <div class="form-group">
+            <select id="vehicleDropdown1">
+                <option value="" disabled selected>Select Car 1</option>
+            </select>
+            <select id="vehicleDropdown2">
+                <option value="" disabled selected>Select Car 2</option>
+            </select>
+            <select id="vehicleDropdown3">
+                <option value="" disabled selected>Select Car 3</option>
+            </select>
+        </div>
+
+        <div id="comparisonResultsContainer" class="vehicle-info">
+            <div id="vehicle1" class="vehicle-details"></div>
+            <div id="vehicle2" class="vehicle-details"></div>
+            <div id="vehicle3" class="vehicle-details"></div>
+        </div>
     </div>
 
-    <div class="vehicle-list" id="vehicleListContainer">
-        <h3>Selected Vehicles</h3>
-        <table id="vehicleTable" style="display: none;">
-            <thead id="vehicleTableHeader" style="display: none;">
-                <tr>
-                    <th>Make</th>
-                    <th>Model</th>
-                    <th>Year</th>
-                </tr>
-            </thead>
-            <tbody id="vehicleList"></tbody>
-        </table>
-    </div>
-
-
-    <button class="compare-btn" id="compareButton" disabled>Compare</button>
-
-    <div class="comparison-results" id="comparisonResultsContainer" style="margin-top: 20px;">
-        <h3>Comparison Results</h3>
-        <table id="comparisonTable" style="display: none;">
-            <thead>
-                <tr>
-                    <th>Car</th>
-                    <th>Price</th>
-                    <th>Body Type</th>
-                    <th>Drive Train</th>
-                    <th>Mileage</th>
-                    <th>Condition</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody id="comparisonTableBody"></tbody>
-        </table>
-    </div>
-
-    <!-- Footer Section -->
     <footer>
         <p>&copy; 2024 DriveIt - All Rights Reserved</p>
     </footer>
 
-
     <script>
+        const vehicleDropdown1 = document.getElementById('vehicleDropdown1');
+        const vehicleDropdown2 = document.getElementById('vehicleDropdown2');
+        const vehicleDropdown3 = document.getElementById('vehicleDropdown3');
 
-        const makeInput = document.getElementById('make');
-        const modelInput = document.getElementById('model');
-        const yearInput = document.getElementById('year');
-        const addCarButton = document.getElementById('addCar');
-        const vehicleTable = document.getElementById('vehicleTable');
-        const vehicleTableHeader = document.getElementById('vehicleTableHeader');
-        const vehicleTableBody = document.getElementById('vehicleList');
-        const compareButton = document.getElementById('compareButton');
+        fetch("/get-vehicle-options")
+            .then(response => response.json())
+            .then(vehicles => {
+                vehicles.forEach(vehicle => {
+                    const option = document.createElement('option');
+                    option.value = vehicle.vin;
+                    option.textContent = `${vehicle.make} ${vehicle.model} (${vehicle.yearOfManufacture})`;
 
-        const selectedVehicles = [];
+                    [vehicleDropdown1, vehicleDropdown2, vehicleDropdown3].forEach(dropdown => {
+                        dropdown.appendChild(option.cloneNode(true));
+                    });
+                });
+            })
+            .catch(error => console.error("Error fetching vehicles:", error));
 
-        addCarButton.addEventListener('click', () => {
-            const make = makeInput.value.trim();
-            const model = modelInput.value.trim();
-            const year = yearInput.value.trim();
+        [vehicleDropdown1, vehicleDropdown2, vehicleDropdown3].forEach(dropdown => {
+            dropdown.addEventListener('change', updateComparison);
+        });
 
-            if (make && model && year) {
-                const vehicle = { make, model, year };
-                selectedVehicles.push(vehicle);
-
-                const row = document.createElement('tr');
-                row.innerHTML = `
-            <td>${make}</td>
-            <td>${model}</td>
-            <td>${year}</td>
-            <td><button class="delete-btn">Remove</button></td>
-        `;
-
-                vehicleTableBody.appendChild(row);
-
-                if (selectedVehicles.length === 1) {
-                    vehicleTable.style.display = 'table';
-                    vehicleTableHeader.style.display = 'table-header-group';
-                }
-
-                const deleteButton = row.querySelector('.delete-btn');
-                deleteButton.addEventListener('click', () => {
-                    // Remove the row from the table
-                    vehicleTableBody.removeChild(row);
-
-                    // Remove the vehicle from the array
-                    const index = selectedVehicles.findIndex(v => v.make === make && v.model === model && v.year === year);
-                    if (index > -1) {
-                        selectedVehicles.splice(index, 1);
-                    }
-
-                    if (selectedVehicles.length === 0) {
-                        compareButton.disabled = true;
-                        vehicleTable.style.display = "none";
-                        vehicleTableHeader.style.display = "none";
+        function updateComparison() {
+            const selected1 = vehicleDropdown1.value;
+            const selected2 = vehicleDropdown2.value;
+            const selected3 = vehicleDropdown3.value;
+        
+            [vehicleDropdown1, vehicleDropdown2, vehicleDropdown3].forEach(dropdown => {
+                dropdown.querySelectorAll('option').forEach(option => {
+                    if ([selected1, selected2, selected3].includes(option.value) && option.value !== "") {
+                        option.disabled = true;
+                    } else {
+                        option.disabled = false;
                     }
                 });
-
-                makeInput.value = '';
-                modelInput.value = '';
-                yearInput.value = '';
-
-                compareButton.disabled = false;
-            } else {
-                alert('Please enter make, model, and year!');
-            }
-            console.log(JSON.stringify(selectedVehicles));
-        });
-
-        compareButton.addEventListener('click', () => {
-            if (selectedVehicles.length > 0) {
-                fetch("/compare", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({ vehicles: selectedVehicles })
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        console.log("Response from server:", data);
-
-                        const comparisonTable = document.getElementById('comparisonTable');
-                        const comparisonTableBody = document.getElementById('comparisonTableBody');
-
-                        // Clear existing rows
-                        comparisonTableBody.innerHTML = '';
-
-                        if (data.vehicleData && Array.isArray(data.vehicleData)) {
-                            data.vehicleData.forEach(vehicle => {
-                                const row = document.createElement('tr');
-                                row.innerHTML = `
-                            <td>${vehicle.make} ${vehicle.model} (${vehicle.yearofmanufacture})</td>
-                            <td>${vehicle.price}</td>
-                            <td>${vehicle.bodytype}</td>
-                            <td>${vehicle.drivetrain}</td>
-                            <td>${vehicle.mileage}</td>
-                            <td>${vehicle.condition}</td>
-                            <td>${vehicle.status}</td>
-                        `;
-                                comparisonTableBody.appendChild(row);
-                            });
-
-                            comparisonTable.style.display = 'table';
+            });
+        
+            const vehicleIds = [selected1, selected2, selected3].filter(Boolean);
+                
+            fetch("/compare", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ vehicles: vehicleIds }),
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    const orderedVehicles = vehicleIds.map(vin =>
+                        data.vehicleData.find(vehicle => vehicle.vin === vin)
+                    );
+                
+                    const slots = ["vehicle1", "vehicle2", "vehicle3"];
+                    slots.forEach((slot, index) => {
+                        const vehicle = orderedVehicles[index];
+                        if (vehicle) {
+                            displayVehicleData(slot, vehicle);
                         } else {
-                            alert("No vehicle data found for comparison!");
+                            document.getElementById(slot).innerHTML = `<p>No data available</p>`;
                         }
-                    })
-                    .catch(error => console.error("Error:", error));
+                    });
+                })
+                .catch((error) => console.error("Error fetching vehicle data:", error));
+        }
+        
+        function displayVehicleData(vehicleId, vehicle) {
+            const vehicleDiv = document.getElementById(vehicleId);
+            if (!vehicle || !vehicle.make) {
+                vehicleDiv.innerHTML = `<p>No data available</p>`;
+                return;
             }
-        });
 
-
+            vehicleDiv.innerHTML = `
+                <h4>${vehicle.make} ${vehicle.model} (${vehicle.yearOfManufacture})</h4>
+                <table>
+                    <tr><th>Price</th><td>${vehicle.price}</td></tr>
+                    <tr><th>Body Type</th><td>${vehicle.bodyType || "N/A"}</td></tr>
+                    <tr><th>Drive Train</th><td>${vehicle.driveTrain || "N/A"}</td></tr>
+                    <tr><th>Mileage</th><td>${vehicle.mileage}</td></tr>
+                    <tr><th>Condition</th><td>${vehicle.condition}</td></tr>
+                    <tr><th>Status</th><td>${vehicle.status}</td></tr>
+                    ${vehicle.specs ? `
+                    <tr><th>Exterior Color</th><td>${vehicle.specs.exteriorcolor || "N/A"}</td></tr>
+                    <tr><th>Interior Color</th><td>${vehicle.specs.interiorcolor || "N/A"}</td></tr>
+                    <tr><th>Number of Seats</th><td>${vehicle.specs.numberofseats || "N/A"}</td></tr>
+                    <tr><th>Transmission</th><td>${vehicle.specs.transmission || "N/A"}</td></tr>
+                    <tr><th>Fuel Type</th><td>${vehicle.specs.fueltype || "N/A"}</td></tr>
+                    <tr><th>Engine Type</th><td>${vehicle.specs.enginetype || "N/A"}</td></tr>
+                    ` : `
+                    <tr><td colspan="2">No specs available</td></tr>
+                    `}
+                </table>
+            `;
+        }
     </script>
 </body>
 
