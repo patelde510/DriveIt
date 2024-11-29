@@ -1,5 +1,3 @@
--- Active: 1729616258976@@127.0.0.1@5432@driveit
-
 DROP DATABASE IF EXISTS driveit;
 CREATE DATABASE driveit;
 \c driveit

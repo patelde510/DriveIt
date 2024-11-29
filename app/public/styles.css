@@ -458,29 +458,59 @@ nav {
     background-color: crimson;
 }
 
-#comparisonTable {
-    width: 50%;
+#compareTab .vehicle-info {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+#compareTab .vehicle-info div {
+    flex: 1;
+    padding: 10px;
+}
+
+#compareTab table {
+    width: 100%;
+    margin-top: 10px;
     border-collapse: collapse;
-    margin: 1rem 0;
 }
 
-#comparisonTable th, #comparisonTable td {
-    padding: 0.5rem;
-    text-align: left;
-    border: 2px solid #060303;
+#compareTab table th,
+#compareTab table td {
+    padding: 10px;
+    border: 1px solid #ddd;
+    text-align: center;
 }
 
-#comparisonTable th {
-    background-color: #f4f4f9;
-    font-weight: bold;
+/* Dropdown Container */
+#compareTab .form-group {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin: 10px 0;
 }
 
-#comparisonTable tr:nth-child(even) {
+#compareTab .form-group select {
+    width: 30%;
+    padding: 8px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
     background-color: #f9f9f9;
+    box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
+    outline: none;
 }
 
-#comparisonTable tr:hover {
-    background-color: #eaeaea;
+#compareTab .form-group select:hover,
+#compareTab .form-group select:focus {
+    border-color: #007bff;
+    background-color: #fff;
+}
+
+#compareTab label {
+    margin-right: 10px;
+    font-size: 16px;
+    font-weight: bold;
 }
 
 .team-section {
@@ -514,3 +544,4 @@ nav {
     font-weight: bold;
     color: #555;
 }
+

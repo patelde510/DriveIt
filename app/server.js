@@ -116,32 +116,58 @@ app.post("/login", async (req, res) => {
     }
 });
 
+app.get("/get-vehicle-options", async (req, res) => {
+    try {
+        const result = await pool.query("SELECT vin, make, model, yearofmanufacture FROM vehicle");
+        const vehicles = result.rows.map(vehicle => ({
+            vin: vehicle.vin,
+            make: vehicle.make,
+            model: vehicle.model,
+            yearOfManufacture: vehicle.yearofmanufacture
+        }));
+        return res.status(200).json(vehicles);
+    } catch (err) {
+        console.error("Error fetching vehicle options:", err);
+        return res.status(500).send("Error fetching vehicle options");
+    }
+});
+
 app.post("/compare", async (req, res) => {
-    const vehicles = req.body.vehicles;
-    const vehicleData = [];
+    const { vehicles } = req.body;
+    try {
+        const vehicleResult = await pool.query(
+            "SELECT * FROM vehicle WHERE vin = ANY($1::text[])",
+            [vehicles]
+        );
 
-    if (Array.isArray(vehicles)) {
-        try {
-            for (const vehicle of vehicles) {
-                const { make, model, year } = vehicle;
-                console.log(`Make: ${make}, Model: ${model}, Year: ${year}`);
+        const specsResult = await pool.query(
+            "SELECT * FROM specs WHERE vin = ANY($1::text[])",
+            [vehicles]
+        );
 
-                const result = await pool.query(
-                    "SELECT * FROM VEHICLE WHERE make = $1 AND model = $2 AND yearOfManufacture = $3",
-                    [make, model, year]
-                );
+        const specsMap = {};
+        specsResult.rows.forEach(spec => {
+            specsMap[spec.vin] = spec;
+        });
 
-                result.rows.forEach(row => {
-                    vehicleData.push(row);
-                });
-            }
+        const formattedData = vehicleResult.rows.map(vehicle => ({
+            vin: vehicle.vin,
+            make: vehicle.make,
+            model: vehicle.model,
+            yearOfManufacture: vehicle.yearofmanufacture,
+            price: vehicle.price,
+            bodyType: vehicle.bodytype,
+            driveTrain: vehicle.drivetrain,
+            mileage: vehicle.mileage,
+            condition: vehicle.condition,
+            status: vehicle.status,
+            specs: specsMap[vehicle.vin] || null
+        }));
 
-            return res.status(200).json({ vehicleData });
-        } catch (error) {
-            return res.status(500).json({ error: "An error occurred while processing vehicles." });
-        }
-    } else {
-        return res.status(400).json({ error: "Invalid data format. Expected an array of vehicles." });
+        return res.status(200).json({ vehicleData: formattedData });
+    } catch (error) {
+        console.error("Error during comparison:", error);
+        return res.status(500).json({ error: "An error occurred while processing vehicles." });
     }
 });
 
