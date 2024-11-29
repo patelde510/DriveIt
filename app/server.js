@@ -397,28 +397,26 @@ app.get("/compare", (req, res) => {
 
 
 // Add to favorites
-app.post("/add-to-favorites", checkIfLoggedIn, async (req, res) => {
+app.post("/add-to-favorites", async (req, res) => {
     const { vin } = req.body;
     const sessionId = req.cookies.session_id;
 
-    if (!vin || !sessionId) {
-        return res.status(400).send("Vehicle VIN and user session are required.");
+    if (!sessionId) {
+        return res.status(401).send("You must log in to add vehicles to favorites.");
     }
 
     try {
-        // Fetch customer based on session ID
         const customerResult = await pool.query(
             "SELECT custid FROM CUSTOMER WHERE sessionId = $1",
             [sessionId]
         );
 
         if (customerResult.rows.length === 0) {
-            return res.status(401).send("Unauthorized user. Please login to add to favorites.");
+            return res.status(401).send("Unauthorized user. Please log in to add to favorites.");
         }
 
         const custId = customerResult.rows[0].custid;
 
-        // Check if vehicle is already in favorites
         const favoriteCheck = await pool.query(
             "SELECT * FROM FAVORITES WHERE custid = $1 AND vin = $2",
             [custId, vin]
@@ -428,16 +426,15 @@ app.post("/add-to-favorites", checkIfLoggedIn, async (req, res) => {
             return res.status(200).send("Vehicle is already in favorites.");
         }
 
-        // Add to favorites table
         await pool.query(
             "INSERT INTO FAVORITES (custid, vin) VALUES ($1, $2)",
             [custId, vin]
         );
 
-        res.status(200).send("Vehicle added to favorites.");
+        return res.status(200).send("Vehicle added to favorites.");
     } catch (err) {
         console.error("Error adding to favorites:", err);
-        res.status(500).send("Error adding to favorites.");
+        return res.status(500).send("Error adding to favorites.");
     }
 });
 
