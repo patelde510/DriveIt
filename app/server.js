@@ -250,12 +250,19 @@ app.get("/fetch-api-data", async (req, res) => {
         const fs = require('fs');
         const envConfig = JSON.parse(fs.readFileSync('../env.json', 'utf8'));
         const apiKey = envConfig.api_key;
-        const apiResponse = await fetch(`https://mc-api.marketcheck.com/v2/search/car/active?api_key=${apiKey}&car_type=new&zip=19104&include_relevant_links=true`);
-        const data = await apiResponse.json();
 
-        console.log(data);
+        const newCarsApiURL = `https://mc-api.marketcheck.com/v2/search/car/active?api_key=${apiKey}&car_type=new&zip=19446&include_relevant_links=true`;
+        const usedCarsApiURL = `https://mc-api.marketcheck.com/v2/search/car/active?api_key=${apiKey}&car_type=used&zip=19446&include_relevant_links=true`;
 
-        for (const listing of data.listings) {
+        const newCarsResponse = await fetch(newCarsApiURL);
+        const newCarsData = await newCarsResponse.json();
+
+        const usedCarsResponse = await fetch(usedCarsApiURL);
+        const usedCarsData = await usedCarsResponse.json();
+
+        const allCars = [...(newCarsData.listings || []), ...(usedCarsData.listings || [])];
+
+        for (const listing of allCars) {
             const vin = listing.vin;
             const make = listing.build?.make;
             const model = listing.build?.model;
@@ -266,12 +273,14 @@ app.get("/fetch-api-data", async (req, res) => {
             const drivetrain = listing.build?.drivetrain;
             const condition = listing.inventory_type;
             const status = listing.status || "active";
+            const imageUrl = listing.media?.photo_links?.[0] || null;
 
             if (vin && make && model && year && price && mileage && bodyType && drivetrain && condition) {
                 await pool.query(
-                    `INSERT INTO Vehicle (vin, make, model, bodytype, drivetrain, price, mileage, condition, yearofmanufacture, status)
-                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
-                    [vin, make, model, bodyType, drivetrain, price, mileage, condition, year, status]
+                    `INSERT INTO Vehicle (vin, make, model, bodytype, drivetrain, price, mileage, condition, yearofmanufacture, status, image_url)
+                     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+                     ON CONFLICT (vin) DO UPDATE SET image_url = EXCLUDED.image_url`,
+                    [vin, make, model, bodyType, drivetrain, price, mileage, condition, year, status, imageUrl]
                 );
 
                 const exteriorColor = listing.exterior_color;
@@ -284,7 +293,8 @@ app.get("/fetch-api-data", async (req, res) => {
                 if (vin && exteriorColor && interiorColor && engineType && numSeats && transmission && fuelType) {
                     await pool.query(
                         `INSERT INTO Specs (vin, exteriorcolor, interiorcolor, enginetype, numberofseats, transmission, fueltype)
-                    VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+                         VALUES ($1, $2, $3, $4, $5, $6, $7)
+                         ON CONFLICT (vin) DO NOTHING`,
                         [vin, exteriorColor, interiorColor, engineType, numSeats, transmission, fuelType]
                     );
                 }
@@ -298,40 +308,53 @@ app.get("/fetch-api-data", async (req, res) => {
     }
 });
 
+
+
+
+
 app.get("/get-vehicles", async (req, res) => {
     try {
-        // Extract filters from query params
-        const { make, model, yearofmanufacture, condition } = req.query; 
-        let query = "SELECT * FROM vehicle";
+        const { make, model, yearofmanufacture, condition } = req.query;
+        let query = `
+            SELECT v.*, 
+                   s.exteriorcolor, 
+                   s.interiorcolor, 
+                   s.enginetype, 
+                   s.numberofseats, 
+                   s.transmission, 
+                   s.fueltype, 
+                   s.otherupgrades
+            FROM vehicle v
+            LEFT JOIN specs s ON v.vin = s.vin
+        `;
         const queryParams = [];
         const conditions = [];
         let queryNum = 1;
 
         if (make) {
-            conditions.push(`LOWER(make) = $${queryNum}`);
+            conditions.push(`LOWER(v.make) = $${queryNum}`);
             queryParams.push(make.toLowerCase());
-            queryNum += 1;
+            queryNum++;
         }
 
         if (model) {
-            conditions.push(`LOWER(model) = $${queryNum}`);
+            conditions.push(`LOWER(v.model) = $${queryNum}`);
             queryParams.push(model.toLowerCase());
-            queryNum += 1;
+            queryNum++;
         }
 
         if (condition) {
-            conditions.push(`condition = $${queryNum}`);
+            conditions.push(`v.condition = $${queryNum}`);
             queryParams.push(condition.toLowerCase());
-            queryNum += 1;
+            queryNum++;
         }
 
         if (yearofmanufacture) {
-            conditions.push(`yearofmanufacture = $${queryNum}`);
+            conditions.push(`v.yearofmanufacture = $${queryNum}`);
             queryParams.push(yearofmanufacture);
-            queryNum += 1;
+            queryNum++;
         }
 
-        // Add WHERE clause if there are conditions
         if (conditions.length > 0) {
             query += ` WHERE ${conditions.join(" AND ")}`;
         }
@@ -343,6 +366,9 @@ app.get("/get-vehicles", async (req, res) => {
         res.status(500).send("Error fetching vehicles");
     }
 });
+
+
+
 
 app.get("/buy", (req, res) => {
     res.sendFile(__dirname + "/public/buy.html"); // Serve static HTML
