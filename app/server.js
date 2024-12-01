@@ -397,28 +397,26 @@ app.get("/compare", (req, res) => {
 
 
 // Add to favorites
-app.post("/add-to-favorites", checkIfLoggedIn, async (req, res) => {
+app.post("/add-to-favorites", async (req, res) => {
     const { vin } = req.body;
     const sessionId = req.cookies.session_id;
 
-    if (!vin || !sessionId) {
-        return res.status(400).send("Vehicle VIN and user session are required.");
+    if (!sessionId) {
+        return res.status(401).send("You must log in to add vehicles to favorites.");
     }
 
     try {
-        // Fetch customer based on session ID
         const customerResult = await pool.query(
             "SELECT custid FROM CUSTOMER WHERE sessionId = $1",
             [sessionId]
         );
 
         if (customerResult.rows.length === 0) {
-            return res.status(401).send("Unauthorized user.");
+            return res.status(401).send("Unauthorized user. Please log in to add to favorites.");
         }
 
         const custId = customerResult.rows[0].custid;
 
-        // Check if vehicle is already in favorites
         const favoriteCheck = await pool.query(
             "SELECT * FROM FAVORITES WHERE custid = $1 AND vin = $2",
             [custId, vin]
@@ -428,16 +426,15 @@ app.post("/add-to-favorites", checkIfLoggedIn, async (req, res) => {
             return res.status(200).send("Vehicle is already in favorites.");
         }
 
-        // Add to favorites table
         await pool.query(
             "INSERT INTO FAVORITES (custid, vin) VALUES ($1, $2)",
             [custId, vin]
         );
 
-        res.status(200).send("Vehicle added to favorites.");
+        return res.status(200).send("Vehicle added to favorites.");
     } catch (err) {
         console.error("Error adding to favorites:", err);
-        res.status(500).send("Error adding to favorites.");
+        return res.status(500).send("Error adding to favorites.");
     }
 });
 
@@ -517,6 +514,78 @@ app.post("/remove-from-favorites", async (req, res) => {
     }
 });
 
+app.get("/get-reviews", async (req, res) => {
+    const { vin } = req.query;
+
+    if (!vin) {
+        return res.status(400).send("Vehicle VIN is required.");
+    }
+
+    try {
+        const reviewsResult = await pool.query(
+            "SELECT comments, make, model FROM review WHERE vin = $1",
+            [vin]
+        );
+
+        res.status(200).json(reviewsResult.rows);
+    } catch (err) {
+        console.error("Error fetching reviews:", err);
+        res.status(500).send("Error fetching reviews.");
+    }
+});
+
+app.post("/submit-review", async (req, res) => {
+    try {
+        const { vin, comment } = req.body;
+        const sessionId = req.cookies.session_id;
+
+        if (!sessionId) {
+            return res
+                .status(401)
+                .send("You must log in to submit a review.");
+        }
+
+        if (!vin || !comment) {
+            return res
+                .status(400)
+                .send("VIN and comment are required to submit a review.");
+        }
+
+        const userResult = await pool.query(
+            "SELECT custid FROM CUSTOMER WHERE sessionId = $1",
+            [sessionId]
+        );
+
+        if (userResult.rows.length === 0) {
+            return res.status(401).send("Invalid session. Please log in again.");
+        }
+
+        const custId = userResult.rows[0].custid;
+
+        const vehicleResult = await pool.query(
+            "SELECT make, model FROM vehicle WHERE vin = $1",
+            [vin]
+        );
+
+        if (vehicleResult.rows.length === 0) {
+            return res
+                .status(400)
+                .send("Vehicle not found for the provided VIN.");
+        }
+
+        const { make, model } = vehicleResult.rows[0];
+
+        await pool.query(
+            `INSERT INTO review (vin, custid, comments, make, model) VALUES ($1, $2, $3, $4, $5)`,
+            [vin, custId, comment, make, model]
+        );
+
+        res.status(200).send("Review submitted successfully.");
+    } catch (err) {
+        console.error("Error submitting review:", err);
+        res.status(500).send("Error submitting review.");
+    }
+});
 
 app.get("/login", redirectIfLoggedIn, (req, res) => {
     return res.sendFile(__dirname + "/public/login.html");
@@ -541,6 +610,9 @@ app.get("/favorites", checkIfLoggedIn, (req, res) => {
     res.sendFile(__dirname + "/public/favorites.html");
 });
 
+app.get("/review", (req, res) => {
+    res.sendFile(__dirname + "/public/review.html");
+});
 
 app.listen(port, hostname, () => {
     console.log(`http://${hostname}:${port}`);

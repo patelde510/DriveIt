@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DriveIt - Vehicle Reviews</title>
+    <link rel="stylesheet" href="/public/styles.css">
+</head>
+
+<body>
+    <header>
+        <h1>DriveIt</h1>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="/">Home</a></li>
+            <li><a href="/buy">Buy Car</a></li>
+            <li><a href="/compare">Compare</a></li>
+            <li><a href="/review">Review</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <h2>Submit a Review</h2>
+        <form id="reviewForm">
+            <label for="vehicleSelect">Select Vehicle:</label>
+            <select id="vehicleSelect" name="vin" required>
+                <option value="" disabled selected>Select a vehicle</option>
+            </select>
+
+            <label for="comment">Your Review:</label>
+            <textarea id="comment" name="comment" rows="5" placeholder="Write your review here (max 500 characters)" maxlength="500" required></textarea>
+
+            <button type="submit">Submit Review</button>
+        </form>
+
+        <div id="messageContainer"></div>
+
+        <h2>Reviews</h2>
+        <div id="reviewsContainer">
+            <p>Select a vehicle to see reviews.</p>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 DriveIt - All Rights Reserved</p>
+    </footer>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", async () => {
+            const vehicleSelect = document.getElementById("vehicleSelect");
+            const reviewsContainer = document.getElementById("reviewsContainer");
+
+            try {
+                // Fetch all vehicles
+                const vehiclesResponse = await fetch("/get-vehicle-options");
+                const vehicles = await vehiclesResponse.json();
+
+                vehicles.forEach(vehicle => {
+                    const option = document.createElement("option");
+                    option.value = JSON.stringify(vehicle);
+                    option.textContent = `${vehicle.make} ${vehicle.model} (${vehicle.yearOfManufacture})`;
+                    vehicleSelect.appendChild(option);
+                });
+
+                // Handle form submission
+                const reviewForm = document.getElementById("reviewForm");
+                reviewForm.addEventListener("submit", async (e) => {
+                    e.preventDefault();
+
+                    // Parse selected vehicle info
+                    const vehicleData = JSON.parse(vehicleSelect.value);
+                    const vin = vehicleData.vin;
+                    const comment = document.getElementById("comment").value;
+
+                    // Validate inputs
+                    if (!vin || !comment) {
+                        showMessage("Please select a vehicle and provide a comment.", "error");
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch("/submit-review", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ vin, comment }),
+                        });
+
+                        if (response.ok) {
+                            showMessage("Review submitted successfully!", "success");
+                            reviewForm.reset();
+                            vehicleSelect.value = "";
+                        } else {
+                            const errorText = await response.text();
+                            showMessage(`Error: ${errorText}`, "error");
+                        }
+                    } catch (err) {
+                        console.error("Error submitting review:", err);
+                        showMessage("An unexpected error occurred. Please try again.", "error");
+                    }
+                });
+
+                // Load reviews when a vehicle is selected
+                vehicleSelect.addEventListener("change", async (e) => {
+                    const vin = JSON.parse(e.target.value).vin;
+
+                    try {
+                        const reviewsResponse = await fetch(`/get-reviews?vin=${vin}`);
+                        const reviews = await reviewsResponse.json();
+
+                        if (reviews.length) {
+                            reviewsContainer.innerHTML = reviews
+                                .map((review, index) => `<p><strong>Anonymous Review #${index + 1}:</strong> ${review.comments}</p>`)
+                                .join("");
+                        } else {
+                            reviewsContainer.innerHTML = "<p>No reviews yet for this vehicle.</p>";
+                        }
+                    } catch (err) {
+                        console.error("Error fetching reviews:", err);
+                        reviewsContainer.innerHTML = "<p>Failed to load reviews.</p>";
+                    }
+                });
+            } catch (err) {
+                console.error("Error initializing page:", err);
+            }
+        });
+
+        // Function to show success or error messages
+        function showMessage(message, type) {
+            const messageContainer = document.getElementById("messageContainer");
+            messageContainer.textContent = message;
+            messageContainer.className = "";
+            messageContainer.classList.add(type);
+            messageContainer.style.display = "block";
+
+            // Hide message after 5 seconds
+            setTimeout(() => {
+                messageContainer.style.display = "none";
+            }, 5000);
+        }
+    </script>
+</body>
+
+</html>
