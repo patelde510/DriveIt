@@ -322,8 +322,7 @@ app.get("/get-vehicles", async (req, res) => {
                    s.enginetype, 
                    s.numberofseats, 
                    s.transmission, 
-                   s.fueltype, 
-                   s.otherupgrades
+                   s.fueltype
             FROM vehicle v
             LEFT JOIN specs s ON v.vin = s.vin
         `;
