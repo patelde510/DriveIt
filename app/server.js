@@ -174,8 +174,14 @@ app.post("/compare", async (req, res) => {
 app.get("/fetch-api-for-buy", async (req, res) => {
     try {
         const fs = require('fs');
-        const envConfig = JSON.parse(fs.readFileSync('env.json', 'utf8'));
-        const apiKey = envConfig.api_key;
+        let apiKey;
+
+        if (process.env.NODE_ENV == "production") {
+            apiKey = process.env.API_KEY;
+        } else {
+            apiKey = JSON.parse(fs.readFileSync('../env.json', 'utf8')).api_key;
+        }
+
         let apiURL = `https://mc-api.marketcheck.com/v2/search/car/active?api_key=${apiKey}&include_relevant_links=true&radius=50`;
 
         // Extract filters from query params
