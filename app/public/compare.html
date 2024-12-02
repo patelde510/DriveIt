@@ -74,7 +74,7 @@
             const selected1 = vehicleDropdown1.value;
             const selected2 = vehicleDropdown2.value;
             const selected3 = vehicleDropdown3.value;
-        
+
             [vehicleDropdown1, vehicleDropdown2, vehicleDropdown3].forEach(dropdown => {
                 dropdown.querySelectorAll('option').forEach(option => {
                     if ([selected1, selected2, selected3].includes(option.value) && option.value !== "") {
@@ -84,9 +84,9 @@
                     }
                 });
             });
-        
+
             const vehicleIds = [selected1, selected2, selected3].filter(Boolean);
-                
+
             fetch("/compare", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -97,7 +97,7 @@
                     const orderedVehicles = vehicleIds.map(vin =>
                         data.vehicleData.find(vehicle => vehicle.vin === vin)
                     );
-                
+
                     const slots = ["vehicle1", "vehicle2", "vehicle3"];
                     slots.forEach((slot, index) => {
                         const vehicle = orderedVehicles[index];
@@ -110,7 +110,7 @@
                 })
                 .catch((error) => console.error("Error fetching vehicle data:", error));
         }
-        
+
         function displayVehicleData(vehicleId, vehicle) {
             const vehicleDiv = document.getElementById(vehicleId);
             if (!vehicle || !vehicle.make) {

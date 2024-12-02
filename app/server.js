@@ -30,9 +30,9 @@ app.use(cookieParser());
 
 
 let cookieOptions = {
-    httpOnly: true, // Prevents JavaScript access
-    secure: false, // Set to true if using HTTPS
-    sameSite: "strict", // Cookie sent only to this domain
+    httpOnly: true,
+    secure: false,
+    sameSite: "strict",
 };
 
 app.post("/signup", async (req, res) => {
@@ -174,12 +174,12 @@ app.post("/compare", async (req, res) => {
 app.get("/fetch-api-for-buy", async (req, res) => {
     try {
         const fs = require('fs');
-        const envConfig = JSON.parse(fs.readFileSync('../env.json', 'utf8'));
+        const envConfig = JSON.parse(fs.readFileSync('env.json', 'utf8'));
         const apiKey = envConfig.api_key;
         let apiURL = `https://mc-api.marketcheck.com/v2/search/car/active?api_key=${apiKey}&include_relevant_links=true&radius=50`;
 
         // Extract filters from query params
-        const { make, model, yearofmanufacture, condition } = req.query; 
+        const { make, model, yearofmanufacture, condition } = req.query;
 
         if (make) {
             apiURL += `&make=${make}`;
@@ -200,7 +200,7 @@ app.get("/fetch-api-for-buy", async (req, res) => {
         const apiResponse = await fetch(apiURL);
         const data = await apiResponse.json();
 
-        console.log(data);
+
 
         for (const listing of data.listings) {
             const vin = listing.vin;
@@ -213,12 +213,14 @@ app.get("/fetch-api-for-buy", async (req, res) => {
             const drivetrain = listing.build?.drivetrain;
             const condition = listing.inventory_type;
             const status = listing.status || "active";
+            const imageUrl = listing.media?.photo_links?.[0] || null;
+
 
             if (vin && make && model && year && price && mileage && bodyType && drivetrain && condition) {
                 await pool.query(
-                    `INSERT INTO Vehicle (vin, make, model, bodytype, drivetrain, price, mileage, condition, yearofmanufacture, status)
-                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
-                    [vin, make, model, bodyType, drivetrain, price, mileage, condition, year, status]
+                    `INSERT INTO Vehicle (vin, make, model, bodytype, drivetrain, price, mileage, condition, yearofmanufacture, status, image_url)
+                     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+                    [vin, make, model, bodyType, drivetrain, price, mileage, condition, year, status, imageUrl]
                 );
 
                 const exteriorColor = listing.exterior_color;
@@ -244,73 +246,6 @@ app.get("/fetch-api-for-buy", async (req, res) => {
         res.status(500).send("Error fetching or inserting data");
     }
 });
-
-app.get("/fetch-api-data", async (req, res) => {
-    try {
-        const fs = require('fs');
-        const envConfig = JSON.parse(fs.readFileSync('../env.json', 'utf8'));
-        const apiKey = envConfig.api_key;
-
-        const newCarsApiURL = `https://mc-api.marketcheck.com/v2/search/car/active?api_key=${apiKey}&car_type=new&zip=19446&include_relevant_links=true`;
-        const usedCarsApiURL = `https://mc-api.marketcheck.com/v2/search/car/active?api_key=${apiKey}&car_type=used&zip=19446&include_relevant_links=true`;
-
-        const newCarsResponse = await fetch(newCarsApiURL);
-        const newCarsData = await newCarsResponse.json();
-
-        const usedCarsResponse = await fetch(usedCarsApiURL);
-        const usedCarsData = await usedCarsResponse.json();
-
-        const allCars = [...(newCarsData.listings || []), ...(usedCarsData.listings || [])];
-
-        for (const listing of allCars) {
-            const vin = listing.vin;
-            const make = listing.build?.make;
-            const model = listing.build?.model;
-            const year = listing.build?.year;
-            const price = listing.price;
-            const mileage = listing.miles;
-            const bodyType = listing.build?.body_type;
-            const drivetrain = listing.build?.drivetrain;
-            const condition = listing.inventory_type;
-            const status = listing.status || "active";
-            const imageUrl = listing.media?.photo_links?.[0] || null;
-
-            if (vin && make && model && year && price && mileage && bodyType && drivetrain && condition) {
-                await pool.query(
-                    `INSERT INTO Vehicle (vin, make, model, bodytype, drivetrain, price, mileage, condition, yearofmanufacture, status, image_url)
-                     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-                     ON CONFLICT (vin) DO UPDATE SET image_url = EXCLUDED.image_url`,
-                    [vin, make, model, bodyType, drivetrain, price, mileage, condition, year, status, imageUrl]
-                );
-
-                const exteriorColor = listing.exterior_color;
-                const interiorColor = listing.interior_color;
-                const engineType = listing.build?.engine;
-                const numSeats = listing.build?.std_seating;
-                const transmission = listing.build?.transmission;
-                const fuelType = listing.build?.fuel_type;
-
-                if (vin && exteriorColor && interiorColor && engineType && numSeats && transmission && fuelType) {
-                    await pool.query(
-                        `INSERT INTO Specs (vin, exteriorcolor, interiorcolor, enginetype, numberofseats, transmission, fueltype)
-                         VALUES ($1, $2, $3, $4, $5, $6, $7)
-                         ON CONFLICT (vin) DO NOTHING`,
-                        [vin, exteriorColor, interiorColor, engineType, numSeats, transmission, fuelType]
-                    );
-                }
-            }
-        }
-
-        res.status(200).send("Data successfully fetched and inserted into the database");
-    } catch (error) {
-        console.error("Error fetching or inserting data:", error);
-        res.status(500).send("Error fetching or inserting data");
-    }
-});
-
-
-
-
 
 app.get("/get-vehicles", async (req, res) => {
     try {
@@ -370,7 +305,7 @@ app.get("/get-vehicles", async (req, res) => {
 
 
 app.get("/buy", (req, res) => {
-    res.sendFile(__dirname + "/public/buy.html"); // Serve static HTML
+    res.sendFile(__dirname + "/public/buy.html");
 });
 
 
@@ -463,7 +398,6 @@ app.post("/add-to-favorites", async (req, res) => {
     }
 });
 
-// Fetch favorites
 app.get("/get-favorites", checkIfLoggedIn, async (req, res) => {
     const sessionId = req.cookies.session_id;
 
@@ -484,12 +418,14 @@ app.get("/get-favorites", checkIfLoggedIn, async (req, res) => {
 
         const custId = customerResult.rows[0].custid;
 
-        // Fetch favorited vehicles with all fields
         const favoritesResult = await pool.query(
             `SELECT v.vin, v.make, v.model, v.bodytype, v.price, v.yearofmanufacture, 
-                    v.mileage, v.condition, v.status 
+                    v.mileage, v.condition, v.status, v.image_url, 
+                    v.drivetrain, s.exteriorcolor, s.interiorcolor, 
+                    s.enginetype, s.numberofseats, s.transmission, s.fueltype
              FROM FAVORITES f 
              JOIN VEHICLE v ON f.vin = v.vin 
+             LEFT JOIN SPECS s ON v.vin = s.vin
              WHERE f.custid = $1`,
             [custId]
         );
@@ -531,7 +467,7 @@ app.post("/remove-from-favorites", async (req, res) => {
         if (deleteResult.rowCount === 0) {
             return res.status(404).send("Vehicle not found in favorites.");
         }
-        
+
         return res.status(200).send({ message: "Vehicle successfully removed from favorites." });
     } catch (err) {
         console.error("Error removing vehicle from favorites:", err);
