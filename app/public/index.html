@@ -40,7 +40,13 @@
         <!-- Basic Information Section -->
         <section>
             <h2>Welcome to DriveIt!</h2>
-            <p>Our platform is designed to simplify your car shopping experience by offering a comprehensive catalog of vehicles sourced from trusted car APIs. Users can search for cars based on various criteria such as make, model, price, and more. DriveIt provides detailed car information, including images and specifications, to help you make informed decisions. With features like favoriting cars, building a wishlist, and comparing vehicle specs side-by-side, we ensure you have all the tools to find your perfect match. While transactions are finalized on external platforms, DriveIt empowers users to research, organize, and explore their car options effortlessly.</p>
+            <p>Our platform is designed to simplify your car shopping experience by offering a comprehensive catalog of
+                vehicles sourced from trusted car APIs. Users can search for cars based on various criteria such as
+                make, model, price, and more. DriveIt provides detailed car information, including images and
+                specifications, to help you make informed decisions. With features like favoriting cars, building a
+                wishlist, and comparing vehicle specs side-by-side, we ensure you have all the tools to find your
+                perfect match. While transactions are finalized on external platforms, DriveIt empowers users to
+                research, organize, and explore their car options effortlessly.</p>
         </section>
 
         <!-- The Minds Behind Section -->
@@ -112,8 +118,7 @@
 
 
                     const data = await response.text();
-                    console.log("DATA: " + data);
-                    const username = data.match(/logged in as (\w+)/);  // Extract username from the response
+                    const username = data.match(/logged in as (\w+)/);
                     if (username) {
                         document.getElementById("usernameDisplay").textContent = `Hello, ${username[1]}`;
                     }
@@ -122,7 +127,7 @@
                     // If response is specifically 401 (unauthorized), reset to "Login" and show Sign Up
                     document.getElementById("loginLink").textContent = "Login";
                     document.getElementById("loginLink").href = "/login";
-                    document.getElementById("signupLink").style.display = "inline-block"; // Show Sign Up again
+                    document.getElementById("signupLink").style.display = "inline-block";
                 }
             } catch (error) {
                 console.log("Error checking if user is logged in or not: ", error);

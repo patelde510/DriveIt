@@ -13,7 +13,7 @@
     <header>
         <h1>DriveIt</h1>
     </header>
-    
+
     <nav>
         <ul>
             <li><a href="/">Home</a></li>
@@ -22,6 +22,7 @@
             <li><a href="/review">Review</a></li>
         </ul>
     </nav>
+
     <div class="container">
         <section id="favorites-list">
             <h2>Favorited Vehicles</h2>
@@ -29,19 +30,30 @@
         </section>
     </div>
 
+    <!-- Modal Structure -->
+    <div id="vehicle-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2 id="modal-title"></h2>
+            <img id="modal-image" src="" alt="Car Image" />
+            <ul id="modal-specs"></ul>
+        </div>
+    </div>
+
     <footer>
         <p>&copy; 2024 DriveIt - All Rights Reserved</p>
     </footer>
 
     <script>
+        // Fetch favorited vehicles and populate the page
         async function fetchFavorites() {
             try {
                 const response = await fetch("/get-favorites");
                 if (!response.ok) {
                     throw new Error("Failed to fetch favorites");
                 }
-                const favorites = await response.json();
 
+                const favorites = await response.json();
                 const container = document.getElementById("favorites-container");
 
                 if (favorites.length === 0) {
@@ -49,9 +61,20 @@
                     return;
                 }
 
-                // Generate vehicle cards
-                const favoriteCards = favorites.map((vehicle) => `
-            <div class="vehicle-card" data-vin="${vehicle.vin}">
+                container.innerHTML = "";
+                favorites.forEach((vehicle) => createVehicleCard(vehicle, container));
+            } catch (error) {
+                console.error("Error fetching favorites:", error);
+                document.getElementById("favorites-container").innerHTML = "<p>Failed to load favorites. Please try again later.</p>";
+            }
+        }
+
+        // Create a vehicle card and add it to the container
+        function createVehicleCard(vehicle, container) {
+            const vehicleCard = document.createElement("div");
+            vehicleCard.classList.add("vehicle-card");
+            vehicleCard.innerHTML = `
+                <img src="${vehicle.image_url || '/public/images/placeholder.jpeg'}" alt="${vehicle.make} ${vehicle.model}" class="vehicle-image"/>
                 <h3>${vehicle.make} ${vehicle.model} (${vehicle.yearofmanufacture})</h3>
                 <ul>
                     <li><strong>Price:</strong> $${vehicle.price}</li>
@@ -59,19 +82,43 @@
                     <li><strong>Condition:</strong> ${vehicle.condition || 'N/A'}</li>
                     <li><strong>Status:</strong> ${vehicle.status || 'N/A'}</li>
                 </ul>
-                <button onclick="removeFromFavorites('${vehicle.vin}')">Remove from Favorites</button>
-            </div>
-        `).join("");
+                <button class="remove-button" onclick="event.stopPropagation(); removeFromFavorites('${vehicle.vin}')">Remove from Favorites</button>
+            `;
 
-                // Update the container after data is ready
-                container.innerHTML = favoriteCards;
-            } catch (error) {
-                console.error("Error fetching favorites:", error);
-                document.getElementById("favorites-container").innerHTML = "<p>Failed to load favorites. Please try again later.</p>";
-            }
+            // Add click listener for modal opening
+            vehicleCard.addEventListener("click", () => openModal(vehicle));
+
+            container.appendChild(vehicleCard);
         }
 
+        // Open the modal and populate it with vehicle data
+        function openModal(vehicle) {
+            const modal = document.getElementById("vehicle-modal");
+            const modalTitle = document.getElementById("modal-title");
+            const modalImage = document.getElementById("modal-image");
+            const modalSpecs = document.getElementById("modal-specs");
 
+            modalTitle.textContent = `${vehicle.make} ${vehicle.model} (${vehicle.yearofmanufacture})`;
+            modalImage.src = vehicle.image_url || '/public/images/placeholder.jpeg';
+            modalSpecs.innerHTML = `
+                <li><strong>Price:</strong> $${vehicle.price}</li>
+                <li><strong>Mileage:</strong> ${vehicle.mileage || "N/A"} miles</li>
+                <li><strong>Condition:</strong> ${vehicle.condition || "N/A"}</li>
+                <li><strong>Status:</strong> ${vehicle.status || "N/A"}</li>
+                <li><strong>Body Type:</strong> ${vehicle.bodytype || "N/A"}</li>
+                <li><strong>Drive Train:</strong> ${vehicle.drivetrain || "N/A"}</li>
+                <li><strong>Exterior Color:</strong> ${vehicle.exteriorcolor || "N/A"}</li>
+                <li><strong>Interior Color:</strong> ${vehicle.interiorcolor || "N/A"}</li>
+                <li><strong>Engine Type:</strong> ${vehicle.enginetype || "N/A"}</li>
+                <li><strong>Number of Seats:</strong> ${vehicle.numberofseats || "N/A"}</li>
+                <li><strong>Transmission:</strong> ${vehicle.transmission || "N/A"}</li>
+                <li><strong>Fuel Type:</strong> ${vehicle.fueltype || "N/A"}</li>
+            `;
+
+            modal.style.display = "block";
+        }
+
+        // Remove a vehicle from favorites
         async function removeFromFavorites(vin) {
             try {
                 const response = await fetch("/remove-from-favorites", {
@@ -84,19 +131,25 @@
                     throw new Error(await response.text());
                 }
 
-                alert("Vehicle successfully removed from favorites.");
-
-                // Remove the card for the removed vehicle
-                const card = document.querySelector(`.vehicle-card[data-vin="${vin}"]`);
-                if (card) {
-                    card.remove();
-                }
-            } catch (err) {
-                console.error("Error removing from favorites:", err);
-                alert(`Error removing from favorites: ${err.message}`);
+                alert("Vehicle removed from favorites!");
+                fetchFavorites();
+            } catch (error) {
+                console.error("Error removing vehicle:", error);
+                alert("Failed to remove vehicle from favorites.");
             }
         }
 
+        document.querySelector(".close-modal").addEventListener("click", () => {
+            document.getElementById("vehicle-modal").style.display = "none";
+        });
+
+        window.addEventListener("click", (e) => {
+            if (e.target === document.getElementById("vehicle-modal")) {
+                document.getElementById("vehicle-modal").style.display = "none";
+            }
+        });
+
+        // Load favorites when the page loads
         document.addEventListener("DOMContentLoaded", fetchFavorites);
     </script>
 </body>

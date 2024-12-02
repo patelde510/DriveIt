@@ -2,11 +2,10 @@ DROP DATABASE IF EXISTS driveit;
 CREATE DATABASE driveit;
 \c driveit
 
-
 -- Create the tables
 
-CREATE TABLE CUSTOMER (
-    custId SERIAL PRIMARY KEY,
+CREATE TABLE customer (
+    custid SERIAL PRIMARY KEY,
     name VARCHAR(50),
     address VARCHAR(100),
     city VARCHAR(100),
@@ -16,55 +15,57 @@ CREATE TABLE CUSTOMER (
     favorites JSON,
     username VARCHAR(20) NOT NULL,
     password VARCHAR(100) NOT NULL,
-    sessionId UUID
+    sessionid UUID
 );
 
-CREATE TABLE REVIEW (
-    reviewID SERIAL PRIMARY KEY,
-    custID INT,
+CREATE TABLE review (
+    reviewid SERIAL PRIMARY KEY,
+    custid INT,
     make VARCHAR(20),
     model VARCHAR(20),
-    rating INT CHECK (Rating BETWEEN 1 AND 5),
-    comments VARCHAR(200)
+    comments VARCHAR(200),
+    CONSTRAINT fk_review_customer
+        FOREIGN KEY (custid) REFERENCES customer(custid)
 );
 
-CREATE TABLE VEHICLE (
+CREATE TABLE vehicle (
     vin VARCHAR(17) PRIMARY KEY,
     make VARCHAR(20),
     model VARCHAR(20),
-    bodyType VARCHAR(20),
-    driveTrain VARCHAR(10),
+    bodytype VARCHAR(20),
+    drivetrain VARCHAR(10),
     price INT,
     mileage INT,
     condition VARCHAR(4),
-    yearOfManufacture INT,
+    yearofmanufacture INT,
     status VARCHAR(10),
-    reviewId INT
+    reviewid INT,
+    image_url VARCHAR(500),
+    CONSTRAINT fk_vehicle_review
+        FOREIGN KEY (reviewid) REFERENCES review(reviewid)
 );
 
-CREATE TABLE SPECS (
-    specId SERIAL PRIMARY KEY,
+CREATE TABLE specs (
+    specid SERIAL PRIMARY KEY,
     vin VARCHAR(17),
-    exteriorColor VARCHAR(50),
-    interiorColor VARCHAR(50),
-    engineType VARCHAR(10),
-    numberOfSeats INT,
+    exteriorcolor VARCHAR(50),
+    interiorcolor VARCHAR(50),
+    enginetype VARCHAR(10),
+    numberofseats INT,
     transmission VARCHAR(10),
-    fuelType VARCHAR(15)
+    fueltype VARCHAR(30),
+    CONSTRAINT fk_specs_vehicle
+        FOREIGN KEY (vin) REFERENCES vehicle(vin)
 );
 
--- Add all foreign key references
-
-ALTER TABLE REVIEW
-ADD CONSTRAINT fk_review_customer
-FOREIGN KEY (custId) REFERENCES CUSTOMER(custId);
-
-ALTER TABLE VEHICLE
-ADD CONSTRAINT fk_vehicle_review
-FOREIGN KEY (reviewId) REFERENCES REVIEW(reviewId);
-
-ALTER TABLE SPECS
-ADD CONSTRAINT fk_specs_vehicle
-FOREIGN KEY (vin) REFERENCES VEHICLE(vin);
+CREATE TABLE favorites (
+    favoriteid SERIAL PRIMARY KEY,
+    custid INT,
+    vin VARCHAR(17),
+    CONSTRAINT fk_favorites_customer
+        FOREIGN KEY (custid) REFERENCES customer(custid),
+    CONSTRAINT fk_favorites_vehicle
+        FOREIGN KEY (vin) REFERENCES vehicle(vin)
+);
 
 \q

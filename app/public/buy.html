@@ -13,7 +13,7 @@
     <header>
         <h1>DriveIt</h1>
     </header>
-    
+
     <!-- Navigation Bar -->
     <nav>
         <ul>
@@ -52,14 +52,14 @@
     </div>
 
     <!-- Modal Structure -->
-<div id="vehicle-modal" class="modal">
-    <div class="modal-content">
-        <span class="close-modal">&times;</span>
-        <h2 id="modal-title"></h2>
-        <img id="modal-image" src="" alt="Car Image" />
-        <ul id="modal-specs"></ul>
+    <div id="vehicle-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2 id="modal-title"></h2>
+            <img id="modal-image" src="" alt="Car Image" />
+            <ul id="modal-specs"></ul>
+        </div>
     </div>
-</div>
 
     <!-- Footer Section -->
     <footer>
@@ -68,39 +68,44 @@
 
     <script>
         async function fetchVehicles() {
-    try {
-        const makeInput = document.getElementById("make-input").value;
-        const modelInput = document.getElementById("model-input").value;
-        const year = document.getElementById("year-input").value;
-        const condition = document.getElementById("type-select").value;
-        
-        const queryParams = new URLSearchParams({
-            make: makeInput || "",
-            model: modelInput || "",
-            yearofmanufacture: year || "",
-            condition: condition || ""
-        });
+            try {
+                const makeInput = document.getElementById("make-input").value;
+                const modelInput = document.getElementById("model-input").value;
+                const year = document.getElementById("year-input").value;
+                const condition = document.getElementById("type-select").value;
 
-        let response = await fetch(`/get-vehicles?${queryParams.toString()}`);
+                const queryParams = new URLSearchParams({
+                    make: makeInput || "",
+                    model: modelInput || "",
+                    yearofmanufacture: year || "",
+                    condition: condition || ""
+                });
 
-        if (!response.ok) {
-            throw new Error("Failed to fetch vehicles");
-        }
+                let response = await fetch(`/get-vehicles?${queryParams.toString()}`);
 
-        let vehicles = await response.json();
-        const container = document.getElementById("vehicles-container");
-        container.innerHTML = "";
+                if (!response.ok) {
+                    throw new Error("Failed to fetch vehicles");
+                }
 
-        if (vehicles.length == 0) {
-            container.innerHTML = "<p>No vehicles available matching your filters.</p>";
-            return;
-        }
+                let vehicles = await response.json();
+                const container = document.getElementById("vehicles-container");
+                container.innerHTML = "";
 
-        vehicles.forEach((vehicle) => {
-    const vehicleCard = document.createElement("div");
-    vehicleCard.classList.add("vehicle-card");
-    vehicleCard.innerHTML = `
-        <img src="${vehicle.image_url || 'placeholder.jpeg'}" alt="${vehicle.make} ${vehicle.model}" class="vehicle-image"/>
+                if (vehicles.length == 0) {
+                    const fetchApiResponse = await fetch(`/fetch-api-for-buy?${queryParams.toString()}`);
+                    response = await fetch(`/get-vehicles?${queryParams.toString()}`);
+                    vehicles = await response.json();
+                }
+
+                if (vehicles.length === 0) {
+                    container.innerHTML = "<p>No vehicles available matching your filters.</p>";
+                    return;
+                }
+                vehicles.forEach((vehicle) => {
+                    const vehicleCard = document.createElement("div");
+                    vehicleCard.classList.add("vehicle-card");
+                    vehicleCard.innerHTML = `
+        <img src="${vehicle.image_url || '/public/images/placeholder.jpeg'}" alt="${vehicle.make} ${vehicle.model}" class="vehicle-image"/>
         <h3>${vehicle.make} ${vehicle.model} (${vehicle.yearofmanufacture})</h3>
         <ul>
             <li><strong>Price:</strong> $${vehicle.price}</li>
@@ -108,33 +113,34 @@
             <li><strong>Condition:</strong> ${vehicle.condition}</li>
             <li><strong>Status:</strong> ${vehicle.status}</li>
         </ul>
-        <button onclick="addToFavorites('${vehicle.vin}')">Add to Favorites</button>
+        <button class="favorite-button" onclick="event.stopPropagation(); addToFavorites('${vehicle.vin}')">Add to Favorites</button>
     `;
 
-    // Add event listener for modal opening
-    vehicleCard.addEventListener("click", () => {
-        openModal(vehicle);
-    });
+                    // Add event listener for modal opening
+                    vehicleCard.addEventListener("click", () => {
+                        openModal(vehicle);
+                    });
 
-    container.appendChild(vehicleCard);
-});
-
-    } catch (error) {
-        console.error("Error fetching vehicles:", error);
-        document.getElementById("vehicles-container").innerHTML = "<p>Failed to load vehicles. Please try again later.</p>";
-    }
-}
+                    container.appendChild(vehicleCard);
+                });
 
 
-function openModal(vehicle) {
-    const modal = document.getElementById("vehicle-modal");
-    const modalTitle = document.getElementById("modal-title");
-    const modalImage = document.getElementById("modal-image");
-    const modalSpecs = document.getElementById("modal-specs");
+            } catch (error) {
+                console.error("Error fetching vehicles:", error);
+                document.getElementById("vehicles-container").innerHTML = "<p>Failed to load vehicles. Please try again later.</p>";
+            }
+        }
 
-    modalTitle.textContent = `${vehicle.make} ${vehicle.model} (${vehicle.yearofmanufacture})`;
-    modalImage.src = vehicle.image_url || "placeholder.jpeg";
-    modalSpecs.innerHTML = `
+
+        function openModal(vehicle) {
+            const modal = document.getElementById("vehicle-modal");
+            const modalTitle = document.getElementById("modal-title");
+            const modalImage = document.getElementById("modal-image");
+            const modalSpecs = document.getElementById("modal-specs");
+
+            modalTitle.textContent = `${vehicle.make} ${vehicle.model} (${vehicle.yearofmanufacture})`;
+            modalImage.src = vehicle.image_url || '/public/images/placeholder.jpeg';
+            modalSpecs.innerHTML = `
         <li><strong>Price:</strong> $${vehicle.price}</li>
         <li><strong>Mileage:</strong> ${vehicle.mileage} miles</li>
         <li><strong>Condition:</strong> ${vehicle.condition}</li>
@@ -147,24 +153,21 @@ function openModal(vehicle) {
         <li><strong>Number of Seats:</strong> ${vehicle.numberofseats || "N/A"}</li>
         <li><strong>Transmission:</strong> ${vehicle.transmission || "N/A"}</li>
         <li><strong>Fuel Type:</strong> ${vehicle.fueltype || "N/A"}</li>
-        <li><strong>Other Upgrades:</strong> ${vehicle.otherupgrades || "N/A"}</li>
     `;
 
-    modal.style.display = "block";
-}
+            modal.style.display = "block";
+        }
 
 
-// Close modal on "X" click
-document.querySelector(".close-modal").addEventListener("click", () => {
-    document.getElementById("vehicle-modal").style.display = "none";
-});
+        document.querySelector(".close-modal").addEventListener("click", () => {
+            document.getElementById("vehicle-modal").style.display = "none";
+        });
 
-// Close modal on outside click
-window.addEventListener("click", (e) => {
-    if (e.target === document.getElementById("vehicle-modal")) {
-        document.getElementById("vehicle-modal").style.display = "none";
-    }
-});
+        window.addEventListener("click", (e) => {
+            if (e.target === document.getElementById("vehicle-modal")) {
+                document.getElementById("vehicle-modal").style.display = "none";
+            }
+        });
 
 
         async function addToFavorites(vin) {
@@ -215,7 +218,7 @@ window.addEventListener("click", (e) => {
                 fetchVehicles(filters);
             });
         });
-        
+
     </script>
 </body>
 
