@@ -108,6 +108,7 @@
             <li><strong>Condition:</strong> ${vehicle.condition}</li>
             <li><strong>Status:</strong> ${vehicle.status}</li>
         </ul>
+        <button onclick="addToFavorites('${vehicle.vin}')">Add to Favorites</button>
     `;
 
     // Add event listener for modal opening
@@ -146,6 +147,7 @@ function openModal(vehicle) {
         <li><strong>Number of Seats:</strong> ${vehicle.numberofseats || "N/A"}</li>
         <li><strong>Transmission:</strong> ${vehicle.transmission || "N/A"}</li>
         <li><strong>Fuel Type:</strong> ${vehicle.fueltype || "N/A"}</li>
+        <li><strong>Other Upgrades:</strong> ${vehicle.otherupgrades || "N/A"}</li>
     `;
 
     modal.style.display = "block";
