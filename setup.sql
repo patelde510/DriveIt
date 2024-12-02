@@ -50,8 +50,7 @@ CREATE TABLE SPECS (
     engineType VARCHAR(10),
     numberOfSeats INT,
     transmission VARCHAR(10),
-    fuelType VARCHAR(15),
-    otherUpgrades JSON
+    fuelType VARCHAR(15)
 );
 
 -- Add all foreign key references
