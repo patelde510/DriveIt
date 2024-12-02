@@ -20,12 +20,12 @@ CREATE TABLE customer (
 
 CREATE TABLE review (
     reviewid SERIAL PRIMARY KEY,
+    vin VARCHAR(17),
     custid INT,
     make VARCHAR(20),
     model VARCHAR(20),
     comments VARCHAR(200),
-    CONSTRAINT fk_review_customer
-        FOREIGN KEY (custid) REFERENCES customer(custid)
+    CONSTRAINT fk_review_customer FOREIGN KEY (custid) REFERENCES customer(custid)
 );
 
 CREATE TABLE vehicle (
@@ -41,9 +41,11 @@ CREATE TABLE vehicle (
     status VARCHAR(10),
     reviewid INT,
     image_url VARCHAR(500),
-    CONSTRAINT fk_vehicle_review
-        FOREIGN KEY (reviewid) REFERENCES review(reviewid)
+    CONSTRAINT fk_vehicle_review FOREIGN KEY (reviewid) REFERENCES review(reviewid)
 );
+
+ALTER TABLE review
+    ADD CONSTRAINT fk_review_vin FOREIGN KEY (vin) REFERENCES vehicle(vin);
 
 CREATE TABLE specs (
     specid SERIAL PRIMARY KEY,
@@ -54,18 +56,15 @@ CREATE TABLE specs (
     numberofseats INT,
     transmission VARCHAR(10),
     fueltype VARCHAR(30),
-    CONSTRAINT fk_specs_vehicle
-        FOREIGN KEY (vin) REFERENCES vehicle(vin)
+    CONSTRAINT fk_specs_vehicle FOREIGN KEY (vin) REFERENCES vehicle(vin)
 );
 
 CREATE TABLE favorites (
     favoriteid SERIAL PRIMARY KEY,
     custid INT,
     vin VARCHAR(17),
-    CONSTRAINT fk_favorites_customer
-        FOREIGN KEY (custid) REFERENCES customer(custid),
-    CONSTRAINT fk_favorites_vehicle
-        FOREIGN KEY (vin) REFERENCES vehicle(vin)
+    CONSTRAINT fk_favorites_customer FOREIGN KEY (custid) REFERENCES customer(custid),
+    CONSTRAINT fk_favorites_vehicle FOREIGN KEY (vin) REFERENCES vehicle(vin)
 );
 
 \q
