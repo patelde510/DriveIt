@@ -113,7 +113,7 @@ This README provides detailed instructions for installing PostgreSQL, setting up
 3. **Launch PostgreSQL with Setup Script:**
    - Mac & Windows: Use the terminal:
      ```
-     npm run start:local
+     npm run setup:local
      ```
 ---
 
