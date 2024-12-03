@@ -50,11 +50,11 @@ ALTER TABLE review
 CREATE TABLE specs (
     specid SERIAL PRIMARY KEY,
     vin VARCHAR(17),
-    exteriorcolor VARCHAR(50),
-    interiorcolor VARCHAR(50),
-    enginetype VARCHAR(10),
+    exteriorcolor VARCHAR(100),
+    interiorcolor VARCHAR(100),
+    enginetype VARCHAR(50),
     numberofseats INT,
-    transmission VARCHAR(10),
+    transmission VARCHAR(50),
     fueltype VARCHAR(30),
     CONSTRAINT fk_specs_vehicle FOREIGN KEY (vin) REFERENCES vehicle(vin)
 );
