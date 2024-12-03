@@ -93,12 +93,21 @@ This README provides detailed instructions for installing PostgreSQL, setting up
 1. **Configure the `env.json` File:**
    - Open the `env.json` file in a text editor.
    - Ensure the following configuration matches your PostgreSQL setup:
+    ```json
      {
        "user": "your_username",
        "database": "driveit",
-       "password": "your_password"
-       "api_key": GET API KEY FROM EMAIL
+       "password": "your_password",
+       "api_key": "your_api_key"
      }
+    ```
+
+   - Obtain the API key:
+       - Visit [MarketCheck API](https://www.marketcheck.com/apis/cars/)
+       - Click on **API Pricing** and sign up for the **Free Tier**
+       - After completing the signup process, you will receive your API key
+       - Replace `"your_api_key"` in the `env.json` file with the key you received
+    
 
 2. **Install Node.js Dependencies:**
    - Navigate to the base directory of the project:
