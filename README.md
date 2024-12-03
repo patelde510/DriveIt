@@ -88,17 +88,6 @@ This README provides detailed instructions for installing PostgreSQL, setting up
 
 ## Database Setup
 
-1. **Launch PostgreSQL with Setup Script:**
-   - Mac: Use the terminal:
-     ```
-     psql -U your_username -f setup.sql
-     ```
-   - Windows: Use the command prompt:
-     ```
-     psql -U your_username -f setup.sql
-     ```
----
-
 ## Application Setup
 
 1. **Configure the `env.json` File:**
@@ -108,6 +97,7 @@ This README provides detailed instructions for installing PostgreSQL, setting up
        "user": "your_username",
        "database": "driveit",
        "password": "your_password"
+       "api_key": GET API KEY FROM EMAIL
      }
 
 2. **Install Node.js Dependencies:**
@@ -119,6 +109,13 @@ This README provides detailed instructions for installing PostgreSQL, setting up
      ```
      npm install
      ```
+
+3. **Launch PostgreSQL with Setup Script:**
+   - Mac & Windows: Use the terminal:
+     ```
+     npm run start:local
+     ```
+---
 
 ---
 
