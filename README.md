@@ -122,9 +122,9 @@ This README provides detailed instructions for installing PostgreSQL, setting up
 ## Running the Application Locally
 
 1. **Start the Server:**
-   - From the base directory, run:
+   - Mac & Windows: Use the terminal:
      ```
-     node app/server.json
+     npm run start:local
      ```
 
 2. **Access the Webpage:**

@@ -179,7 +179,7 @@ app.get("/fetch-api-for-buy", async (req, res) => {
         if (process.env.NODE_ENV == "production") {
             apiKey = process.env.API_KEY;
         } else {
-            apiKey = JSON.parse(fs.readFileSync('../env.json', 'utf8')).api_key;
+            apiKey = require('../env.json').api_key;
         }
 
         let apiURL = `https://mc-api.marketcheck.com/v2/search/car/active?api_key=${apiKey}&include_relevant_links=true&radius=50`;
