@@ -102,7 +102,7 @@ This README provides detailed instructions for installing PostgreSQL, setting up
      }
     ```
 
-   - Obtain the API key:
+   - Obtain the API key: **[OPTIONAL]**
        - Visit [MarketCheck API](https://www.marketcheck.com/apis/cars/)
        - Click on **API Pricing** and sign up for the **Free Tier**
        - After completing the signup process, you will receive your API key
