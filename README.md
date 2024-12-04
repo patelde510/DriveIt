@@ -89,8 +89,6 @@ This README provides detailed instructions for installing PostgreSQL, setting up
 
 ---
 
-## Database Setup
-
 ## Application Setup
 
 1. **Configure the `env.json` File:**
