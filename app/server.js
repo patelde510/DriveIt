@@ -180,11 +180,6 @@ app.get("/fetch-api-for-buy", async (req, res) => {
             apiKey = process.env.API_KEY;
         } else {
             apiKey = require('../env.json').api_key;
-
-            if(apiKey == undefined){
-                console.log("No API key found in env.json");
-                return res.status(500).json({ error: "No API key found" });
-            }
         }
 
         let apiURL = `https://mc-api.marketcheck.com/v2/search/car/active?api_key=${apiKey}&include_relevant_links=true&radius=50`;
